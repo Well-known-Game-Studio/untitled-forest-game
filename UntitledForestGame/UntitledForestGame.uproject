@@ -43,11 +43,23 @@
 		},
 		{
 			"Name": "BlockoutToolsPlugin",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/d337b97aca8947a893526964e179acfd"
 		},
 		{
 			"Name": "StaticMeshEditorModeling",
+			"Enabled": true
+		},
+		{
+			"Name": "GeometryScripting",
+			"Enabled": true
+		},
+		{
+			"Name": "Water",
+			"Enabled": true
+		},
+		{
+			"Name": "WaterExtras",
 			"Enabled": true
 		}
 	]
