@@ -33,3 +33,9 @@ below
   meshes or modify meshes that exist in the level. This can be useful for moving
   the pivot of a static mesh or for making a slightly more complex static mesh
   like a mushroom or a ramp.
+
+  ![CleanShot 2024-12-24 at 14 23 50@2x](https://github.com/user-attachments/assets/ea43cd6d-2698-4fb1-ad79-a6f5ee7861a3)
+
+  When using the modeling mode, you should usually start with creating the basic type of shape you want to start with (e.g. box, sphere, cylinder), and after you've hit `Accept` on the creation, you can then use the deform, model, or mesh tools to adjust it as you see fit.
+
+  ![CleanShot 2024-12-24 at 14 26 31@2x](https://github.com/user-attachments/assets/759fedf9-703a-4118-b5db-5cfaef611ea8)
