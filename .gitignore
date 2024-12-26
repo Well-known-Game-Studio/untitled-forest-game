@@ -75,3 +75,5 @@ DerivedDataCache/*
 Intermediate/
 Saved/
 .DS_Store
+Binaries/
+Build/
