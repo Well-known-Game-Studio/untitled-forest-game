@@ -49,6 +49,7 @@ System Design
 
 Grid Cell Structure
 
+```c++
 USTRUCT(BlueprintType)
 struct FGridCell
 {
@@ -72,9 +73,11 @@ struct FGridCell
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid Cell")
     UGridItem* OccupyingItem;
 };
+```
 
 Grid Item Structure
 
+```c++
 UCLASS(Blueprintable)
 class YOURGAME_API UGridItem : public UObject
 {
@@ -107,6 +110,7 @@ public:
 
     void Initialize(const FString& Name, FVector2D Origin, int32 InWidth, int32 InHeight);
 };
+```
 
 Grid Manager API
 
@@ -174,5 +178,3 @@ Future Extensions
 	•	Enable complex interactions between items and grid cells (e.g., soil depletion spreading across adjacent cells).
 	3.	Save/Load Functionality:
 	•	Serialize grid and item data for persistence.
-
-This design document provides a comprehensive framework for implementing the Grid Manager, ensuring it is flexible, efficient, and scalable. Let me know if you’d like further refinements or additional features!
