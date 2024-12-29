@@ -24,7 +24,7 @@ void AGrid::InitializeGrid()
             FGridCell NewCell;
             // set the cell type to be Ground
             NewCell.CellType = EGridCellType::Ground;
-            NewCell.WorldPosition = FVector(x * CellSize, y * CellSize, 0.0f);
+            NewCell.WorldPosition = FVector(x * CellSize, y * CellSize, 0) + GetActorLocation();
             EGroundType ground_type = EGroundType::Grass;
             NewCell.Attributes = UUfgGameplayFunctionLibrary::RandomizeGridCellAttributes(ground_type);
             NewCell.bIsOccupied = false;
@@ -184,8 +184,9 @@ void AGrid::DebugDrawGrid()
 
     for (const FGridCell& Cell : GridCells)
     {
-        FVector Center = Cell.WorldPosition + FVector(CellSize / 2, CellSize / 2, 0);
-        DrawDebugBox(World, Center, FVector(CellSize / 2, CellSize / 2, 50), FColor::Blue, false, -1.0f);
+      FVector HalfSize = FVector(CellSize / 2, CellSize / 2, CellSize / 2);
+        FVector Center = Cell.WorldPosition + HalfSize;
+        DrawDebugBox(World, Center, HalfSize, FColor::Blue, false, -1.0f);
     }
 }
 
@@ -200,7 +201,8 @@ void AGrid::DebugDrawItem(const UGridItem* Item)
     TArray<int32> Cells = Item->OccupiedCells;
     for (int32 CellIndex : Cells)
     {
-        FVector Center = GridCells[CellIndex].WorldPosition + FVector(CellSize / 2, CellSize / 2, 0);
-        DrawDebugBox(World, Center, FVector(CellSize / 2, CellSize / 2, 50), FColor::Green, false, -1.0f);
+      FVector HalfSize = FVector(CellSize / 2, CellSize / 2, CellSize / 2);
+        FVector Center = GridCells[CellIndex].WorldPosition + HalfSize;
+        DrawDebugBox(World, Center, HalfSize, FColor::Green, false, -1.0f);
     }
 }
