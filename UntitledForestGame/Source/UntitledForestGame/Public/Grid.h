@@ -7,7 +7,7 @@
 
 class UGridItem;
 
-UCLASS()
+UCLASS(BlueprintType, Blueprintable)
 class UNTITLEDFORESTGAME_API AGrid : public AActor
 {
     GENERATED_BODY()
