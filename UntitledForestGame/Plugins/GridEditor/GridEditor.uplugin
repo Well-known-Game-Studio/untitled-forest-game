@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "GridEditor",
+	"Description": "",
+	"Category": "Other",
+	"CreatedBy": "William Emfinger",
+	"CreatedByURL": "https://github.com/finger563",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": false,
+	"IsBetaVersion": true,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "GridEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		}
+	]
+}
