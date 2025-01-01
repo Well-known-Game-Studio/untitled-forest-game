@@ -8,7 +8,7 @@
 class UGridItem;
 
 UCLASS(BlueprintType, Blueprintable)
-class AGrid : public AActor
+class GRIDMANAGER_API AGrid : public AActor
 {
     GENERATED_BODY()
 

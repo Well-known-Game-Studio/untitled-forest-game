@@ -27,7 +27,6 @@ public class GridEditor : ModuleRules
 			{
 				"Core",
 				// ... add other public dependencies that you statically link with here ...
-				"GridManager",
 			}
 			);
 			
@@ -39,14 +38,16 @@ public class GridEditor : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+				"ToolMenus",
 				"InputCore",
 				"EditorFramework",
 				"EditorStyle",
 				"UnrealEd",
 				"LevelEditor",
 				"InteractiveToolsFramework",
-				"EditorInteractiveToolsFramework"
+				"EditorInteractiveToolsFramework",
 				// ... add private dependencies that you statically link with here ...	
+				"GridManager"
 			}
 			);
 		

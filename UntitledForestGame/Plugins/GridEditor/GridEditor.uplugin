@@ -24,7 +24,6 @@
 	"Plugins": [
 		{
 			"Name": "GridManager",
-			"LoadingPhase": "Default",
 			"Enabled": true
 		}
 	]

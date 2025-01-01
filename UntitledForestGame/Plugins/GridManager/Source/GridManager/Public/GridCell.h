@@ -12,7 +12,7 @@ enum class EGridCellType : uint8
     Unusable,
 };
 
-EGridCellType GetGridCellTypeFromString(const FString& CellTypeString);
+GRIDMANAGER_API EGridCellType GetGridCellTypeFromString(const FString& CellTypeString);
 
 // Enum for ground types
 UENUM(BlueprintType)
@@ -31,7 +31,7 @@ enum class EGroundType : uint8
     Count
 };
 
-EGroundType GetGroundTypeFromString(const FString& GroundTypeString);
+GRIDMANAGER_API EGroundType GetGroundTypeFromString(const FString& GroundTypeString);
 
 // Struct for grid cell atributes
 USTRUCT(BlueprintType)

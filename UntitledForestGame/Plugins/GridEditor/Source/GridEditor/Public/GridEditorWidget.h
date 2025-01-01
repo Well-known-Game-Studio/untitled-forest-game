@@ -9,16 +9,26 @@ class SGridEditorWidget : public SCompoundWidget
 {
 public:
     SLATE_BEGIN_ARGS(SGridEditorWidget) {}
-    SLATE_ARGUMENT(TWeakObjectPtr<AGrid>, Grid)
+    SLATE_ARGUMENT(TArray<TWeakObjectPtr<AGrid>>, Grids)
     SLATE_END_ARGS()
 
     void Construct(const FArguments& InArgs);
 
 private:
-    // Reference to the Grid
-    TWeakObjectPtr<AGrid> Grid;
+    // List of Grid actors in the level
+    TArray<TWeakObjectPtr<AGrid>> Grids;
 
-    // Callbacks for UI actions
+    // Currently selected Grid
+    TWeakObjectPtr<AGrid> SelectedGrid;
+
+    // Callbacks
+    void OnGridSelected(TSharedPtr<FString> NewValue, ESelectInfo::Type SelectInfo);
+
+    // UI Components
+    TArray<TSharedPtr<FString>> GridNames;
+    TSharedPtr<SComboBox<TSharedPtr<FString>>> GridDropdown;
+
+    // Other callbacks for UI actions
     FReply OnInitializeGridClicked();
     FReply OnPaintCellClicked();
     FReply OnFillGridClicked();

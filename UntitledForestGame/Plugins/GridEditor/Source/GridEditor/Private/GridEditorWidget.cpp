@@ -6,12 +6,43 @@
 
 void SGridEditorWidget::Construct(const FArguments& InArgs)
 {
-    Grid = InArgs._Grid;
+    Grids = InArgs._Grids;
+
+    // Populate the names for the dropdown
+    for (TWeakObjectPtr<AGrid> Manager : Grids)
+    {
+        if (Manager.IsValid())
+        {
+            GridNames.Add(MakeShareable(new FString(Manager->GetName())));
+        }
+    }
 
     ChildSlot
     [
         SNew(SVerticalBox)
 
+        // Dropdown to select Grid
+        + SVerticalBox::Slot()
+        .AutoHeight()
+        .Padding(5)
+        [
+            SNew(STextBlock).Text(FText::FromString("Select Grid"))
+        ]
+        + SVerticalBox::Slot()
+        .AutoHeight()
+        .Padding(5)
+        [
+            SNew(SComboBox<TSharedPtr<FString>>)
+            .OptionsSource(&GridNames)
+            .OnSelectionChanged(this, &SGridEditorWidget::OnGridSelected)
+            .OnGenerateWidget_Lambda([](TSharedPtr<FString> InOption)
+            {
+                return SNew(STextBlock).Text(FText::FromString(*InOption));
+            })
+            [
+                SNew(STextBlock).Text(FText::FromString("Select Grid"))
+            ]
+        ]
         // Grid Initialization
         + SVerticalBox::Slot()
         .AutoHeight()
@@ -109,22 +140,35 @@ void SGridEditorWidget::Construct(const FArguments& InArgs)
     ];
 }
 
+void SGridEditorWidget::OnGridSelected(TSharedPtr<FString> NewValue, ESelectInfo::Type SelectInfo)
+{
+    // Find the selected Grid
+    for (TWeakObjectPtr<AGrid> Manager : Grids)
+    {
+        if (Manager.IsValid() && Manager->GetName() == *NewValue)
+        {
+            SelectedGrid = Manager;
+            break;
+        }
+    }
+}
+
 FReply SGridEditorWidget::OnInitializeGridClicked()
 {
-    if (Grid.IsValid())
+    if (SelectedGrid.IsValid())
     {
-        Grid->GridWidth = GridWidthInput;
-        Grid->GridHeight = GridHeightInput;
-        Grid->InitializeGrid();
+        SelectedGrid->GridWidth = GridWidthInput;
+        SelectedGrid->GridHeight = GridHeightInput;
+        SelectedGrid->InitializeGrid();
     }
     return FReply::Handled();
 }
 
 FReply SGridEditorWidget::OnPaintCellClicked()
 {
-    if (Grid.IsValid())
+    if (SelectedGrid.IsValid())
     {
-        FGridCell* Cell = Grid->GetGridCell(0, 0); // Example: Modify cell at (0, 0)
+        FGridCell* Cell = SelectedGrid->GetGridCell(0, 0); // Example: Modify cell at (0, 0)
         if (Cell)
         {
             Cell->CellType = GetGridCellTypeFromString(CellTypeInput);
@@ -137,13 +181,13 @@ FReply SGridEditorWidget::OnPaintCellClicked()
 
 FReply SGridEditorWidget::OnFillGridClicked()
 {
-    if (Grid.IsValid())
+    if (SelectedGrid.IsValid())
     {
-        for (int32 Y = 0; Y < Grid->GridHeight; ++Y)
+        for (int32 Y = 0; Y < SelectedGrid->GridHeight; ++Y)
         {
-            for (int32 X = 0; X < Grid->GridWidth; ++X)
+            for (int32 X = 0; X < SelectedGrid->GridWidth; ++X)
             {
-                FGridCell* Cell = Grid->GetGridCell(X, Y);
+                FGridCell* Cell = SelectedGrid->GetGridCell(X, Y);
                 if (Cell)
                 {
                     Cell->CellType = GetGridCellTypeFromString(CellTypeInput);

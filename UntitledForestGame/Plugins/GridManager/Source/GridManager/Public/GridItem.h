@@ -10,7 +10,7 @@ class AGrid;
 
 // Struct for multi-tile items
 UCLASS(Blueprintable, BlueprintType)
-class UGridItem : public UObject
+class GRIDMANAGER_API UGridItem : public UObject
 {
     GENERATED_BODY()
 
