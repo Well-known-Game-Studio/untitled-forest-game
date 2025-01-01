@@ -16,15 +16,6 @@ class UNTITLEDFORESTGAME_API UUfgGameplayFunctionLibrary : public UBlueprintFunc
 
 public:
 
-    UFUNCTION(BlueprintCallable, Category = "Grid")
-    static FGridCellAttributes RandomizeGridCellAttributes(EGroundType GroundType);
-
-    UFUNCTION(BlueprintCallable, Category = "Grid")
-    static int32 GetGridCellIndex(int32 X, int32 Y, const AGrid* Grid);
-
-    UFUNCTION(BlueprintCallable, Category = "Grid")
-    static int32 GetGridCellIndexForGridWidth(int32 X, int32 Y, int32 GridWidth);
-
     UFUNCTION(BlueprintCallable, Category = "Debug")
     static void DrawHitPointAndBounds(AActor* HitActor, const FHitResult& Hit);
 
