@@ -26,6 +26,17 @@ Actions:
 * Grow mushrooms on log
 * Climb back up and leave area
 
+Note: we're gonna try to keep the UI light / simple so that we don't clutter the
+screen more than we need to and so that we have less work to do for now.
+
+Note: to let players know when they should start sleeping / when the day-night
+cycle is about to restart (after it gets dark of course), we'll have some
+fireflies spawn when there's an hour or so left. Similarly, we could have some
+bio-luminescent vegetation like certain mushrooms and such start glowing as
+well. We do have a full moon / star system as well which provides some light, so
+we could adjust its lighting intensity as well. I guess what I'm saying is we
+have a lot of knobs to turn.
+
 Systems:
 * NPC interaction
 * NPC goals / routine
