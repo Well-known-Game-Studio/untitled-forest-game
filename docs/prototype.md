@@ -28,10 +28,12 @@ Actions:
 
 Systems:
 * NPC interaction
-* Quest
+* NPC goals / routine
+* Player quest
 * Grid management
 * Growth management (mossy tiles)
 * Time management
 * Player attributes / stamina
 * Scale change (moss to stone)
 * Inventory (once stone)
+
