@@ -34,6 +34,6 @@ Systems:
 * Growth management (mossy tiles)
 * Time management
 * Player attributes / stamina
-* Scale change (moss to stone)
+* Scale change + mount / takeover (moss to stone player change)
 * Inventory (once stone)
 
