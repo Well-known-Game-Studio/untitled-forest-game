@@ -179,10 +179,16 @@ void UGridItem::UpdateOccupiedCells()
     width = Height;
     height = Width;
   }
+  OccupiedCells.Reserve(width * height);
+  OccupiedCells.Add(Grid->GetGridCellIndex(OriginCell.X, OriginCell.Y));
   for (int32 i = -width / 2; i < width / 2; i++)
   {
     for (int32 j = -height / 2; j < height / 2; j++)
     {
+      if (i == 0 && j == 0)
+      {
+        continue;
+      }
       int32 CellIndex = Grid->GetGridCellIndex(OriginCell.X + i, OriginCell.Y + j);
       OccupiedCells.Add(CellIndex);
     }

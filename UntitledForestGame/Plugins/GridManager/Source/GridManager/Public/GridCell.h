@@ -3,6 +3,8 @@
 #include "CoreMinimal.h"
 #include "GridCell.generated.h"
 
+class UGridItem;
+
 // Enum for grid cell types
 UENUM(BlueprintType)
 enum class EGridCellType : uint8
@@ -68,5 +70,5 @@ struct FGridCell
     bool bIsOccupied;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    AActor* OccupyingActor;
+    UGridItem* OccupyingItem;
 };

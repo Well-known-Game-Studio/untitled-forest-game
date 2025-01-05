@@ -74,6 +74,10 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Grid")
     void RotateItem(UGridItem* Item, float NewRotation);
 
+    // get an item by world position
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    UGridItem* GetItemAtWorldPosition(const FVector& WorldPosition);
+
     // Get a cell by world position
     UFUNCTION(BlueprintCallable, Category = "Grid")
     bool GetCellAtWorldPosition(const FVector& WorldPosition, FGridCell& Cell);

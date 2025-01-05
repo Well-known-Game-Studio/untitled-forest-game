@@ -114,7 +114,7 @@ void AGrid::InitializeGrid()
             EGroundType ground_type = EGroundType::Grass;
             NewCell.Attributes = RandomizeGridCellAttributes(ground_type);
             NewCell.bIsOccupied = false;
-            NewCell.OccupyingActor = nullptr;
+            NewCell.OccupyingItem = nullptr;
 
             GridCells.Add(NewCell);
         }
@@ -151,6 +151,18 @@ FVector2D AGrid::WorldToGrid(const FVector& WorldPosition) const
     int32 y = FMath::FloorToInt(RelativePosition.Y / CellSize);
 
     return FVector2D(x, y);
+}
+
+// Get an item at a specific world position
+UGridItem* AGrid::GetItemAtWorldPosition(const FVector& WorldPosition)
+{
+    FGridCell Cell;
+    if (!GetCellAtWorldPosition(WorldPosition, Cell))
+    {
+        return nullptr;
+    }
+
+    return Cell.OccupyingItem;
 }
 
 // Get a cell at a specific world position
@@ -203,6 +215,12 @@ bool AGrid::CanPlaceItemAtWorldPosition(const FVector& WorldPosition, const FVec
 
   FVector2D GridPosition = WorldToGrid(WorldPosition);
 
+  int32 OriginIndex = GridPosition.X + GridPosition.Y * GridWidth;
+  if (OriginIndex < 0 || OriginIndex >= GridCells.Num() || GridCells[OriginIndex].bIsOccupied)
+  {
+      return false;
+  }
+
   for (int32 y = -height/2; y < height/2; ++y)
   {
       for (int32 x = -width/2; x < width/2; ++x)
@@ -253,9 +271,13 @@ bool AGrid::PlaceItem(UGridItem* Item)
     for (int32 CellIndex : CellsToOccupy)
     {
         GridCells[CellIndex].bIsOccupied = true;
+        GridCells[CellIndex].OccupyingItem = Item;
     }
 
     UE_LOG(LogTemp, Log, TEXT("Item placed: %s"), *Item->ItemName);
+
+    // add the item to the grid
+    ManagedItems.Add(Item);
 
     return true;
 }
@@ -270,9 +292,13 @@ bool AGrid::RemoveItem(UGridItem* Item)
     for (int32 CellIndex : CellsToFree)
     {
         GridCells[CellIndex].bIsOccupied = false;
+        GridCells[CellIndex].OccupyingItem = nullptr;
     }
 
     UE_LOG(LogTemp, Log, TEXT("Item removed: %s"), *Item->ItemName);
+
+    // remove the item from the grid
+    ManagedItems.Remove(Item);
 
     return true;
 }
