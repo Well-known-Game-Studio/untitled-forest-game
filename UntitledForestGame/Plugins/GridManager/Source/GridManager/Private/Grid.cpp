@@ -94,6 +94,38 @@ FGridCellAttributes AGrid::RandomizeGridCellAttributes(EGroundType GroundType) {
   return Attributes;
 }
 
+#if WITH_EDITOR
+void AGrid::EditorTick(float DeltaTime)
+{
+  DebugDrawGrid();
+}
+#endif
+
+// This ultimately is what controls whether or not it can even tick at all in the editor view port. But, it is EVERY view port so it still needs to be blocked from preview windows and junk.
+bool AGrid::ShouldTickIfViewportsOnly() const
+{
+    if (GetWorld() != nullptr && GetWorld()->WorldType == EWorldType::Editor)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+void AGrid::Tick(float DeltaTime)
+{
+  if (GetWorld() != nullptr && GetWorld()->WorldType == EWorldType::Editor) {
+#if WITH_EDITOR
+    EditorTick(DeltaTime);
+    BlueprintEditorTick(DeltaTime);
+#endif
+  } else {
+    Super::Tick(DeltaTime);
+  }
+}
+
 int32 AGrid::GetGridCellIndex(int32 X, int32 Y) const {
   return Y * GridWidth + X;
 }

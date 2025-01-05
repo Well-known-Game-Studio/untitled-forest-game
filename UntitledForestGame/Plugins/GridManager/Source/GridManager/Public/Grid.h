@@ -16,6 +16,20 @@ public:
     // Constructor
     AGrid();
 
+#if WITH_EDITOR
+    /** Tick that runs ONLY in the editor viewport.*/
+    void EditorTick(float DeltaTime);
+#endif
+
+    /** Tick that runs ONLY in the editor viewport.*/
+    UFUNCTION(BlueprintImplementableEvent, CallInEditor, Category = "Events")
+    void BlueprintEditorTick(float DeltaTime);
+
+    virtual void Tick(float DeltaTime) override;
+
+    // Allows us to draw debug information in the editor
+    virtual bool ShouldTickIfViewportsOnly() const override;
+
     // Grid dimensions and settings
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid Settings")
     int32 GridWidth;
