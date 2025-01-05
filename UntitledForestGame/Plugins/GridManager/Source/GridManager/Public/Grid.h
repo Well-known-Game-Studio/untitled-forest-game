@@ -78,6 +78,14 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Grid")
     bool GetCellAtWorldPosition(const FVector& WorldPosition, FGridCell& Cell);
 
+    // Get the grid cell in front of a location by the direction vector
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    bool GetCellInDirectionFromWorldPosition(const FVector& WorldPosition, const FVector& Direction, FGridCell& Cell);
+
+    // Get the grid cell in front of a given actor, using the actor's forward vector
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    bool GetCellInFrontOfActor(const AActor* Actor, FGridCell& Cell);
+
     // Debugging
     UFUNCTION(BlueprintCallable, Category = "Grid")
     void DebugDrawGrid();

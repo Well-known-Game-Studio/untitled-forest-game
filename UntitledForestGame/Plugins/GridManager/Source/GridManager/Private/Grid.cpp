@@ -172,6 +172,22 @@ bool AGrid::GetCellAtWorldPosition(const FVector& WorldPosition, FGridCell& Cell
   return true;
 }
 
+bool AGrid::GetCellInDirectionFromWorldPosition(const FVector& WorldPosition, const FVector& Direction, FGridCell& Cell) {
+  // Multiply the direction by the cell size and add it to the world position
+  auto CellPosition = WorldPosition + FVector(Direction.X * CellSize, Direction.Y * CellSize, 0);
+  return GetCellAtWorldPosition(CellPosition, Cell);
+}
+
+bool AGrid::GetCellInFrontOfActor(const AActor* Actor, FGridCell& Cell) {
+  if (!Actor) {
+    return false;
+  }
+
+  FVector ActorLocation = Actor->GetActorLocation();
+  FVector ActorForwardVector = Actor->GetActorForwardVector();
+  return GetCellInDirectionFromWorldPosition(ActorLocation, ActorForwardVector, Cell);
+}
+
 bool AGrid::CanPlaceItemAtWorldPosition(const FVector& WorldPosition, const FVector& ItemSize)
 {
   FGridCell Cell;

@@ -75,6 +75,88 @@ void UGridItem::Initialize(AGrid *NewGrid, const FString &Name, const FVector2D 
   UpdateOccupiedCells();
 }
 
+
+// Spawn the actor
+void UGridItem::SpawnActor(TSubclassOf<AActor> ActorClass) {
+  if (Grid == nullptr)
+  {
+    return;
+  }
+  if (ActorClass == nullptr)
+  {
+    return;
+  }
+  if (Actor != nullptr)
+  {
+    Actor->Destroy();
+  }
+  FActorSpawnParameters SpawnParams;
+  SpawnParams.Owner = Grid;
+  SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+  Actor = Grid->GetWorld()->SpawnActor<AActor>(ActorClass, GetActorTransform(), SpawnParams);
+}
+
+// Set the Actor pointer
+void UGridItem::SetActor(AActor* NewActor) {
+  Actor = NewActor;
+}
+
+// Set the Grid pointer
+void UGridItem::SetGrid(AGrid* NewGrid) {
+  Grid = NewGrid;
+  // TODO: Update the origin cell
+  // Update the occupied cells
+  UpdateOccupiedCells();
+}
+
+// Get the actor's transform
+FTransform UGridItem::GetActorTransform() const {
+  if (Actor == nullptr)
+  {
+    return FTransform();
+  }
+  FVector Location = Actor->GetActorLocation();
+  FRotator Rotator(0.0f, 0.0f, Rotation);
+  return FTransform(Rotator, Location);
+}
+
+// Get the actor's location
+FVector UGridItem::GetActorLocation() const {
+  if (Actor == nullptr)
+  {
+    return FVector();
+  }
+  return Actor->GetActorLocation();
+}
+
+// Get the actor's rotation
+FRotator UGridItem::GetActorRotation() const {
+  if (Actor == nullptr)
+  {
+    return FRotator();
+  }
+  return Actor->GetActorRotation();
+}
+
+// Set the actor's location
+void UGridItem::SetActorLocation(const FVector &NewLocation) {
+  if (Actor == nullptr)
+  {
+    return;
+  }
+  Actor->SetActorLocation(NewLocation);
+}
+
+// Set the actor's rotation
+void UGridItem::SetActorRotation(const FRotator &NewRotation) {
+  if (Actor == nullptr)
+  {
+    return;
+  }
+  Actor->SetActorRotation(NewRotation);
+}
+
+
 void UGridItem::Update(const FVector2D &NewOrigin, float NewRotation)
 {
   OriginCell = NewOrigin;
