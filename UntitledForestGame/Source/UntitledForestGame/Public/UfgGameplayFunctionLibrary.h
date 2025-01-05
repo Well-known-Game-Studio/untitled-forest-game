@@ -16,6 +16,12 @@ class UNTITLEDFORESTGAME_API UUfgGameplayFunctionLibrary : public UBlueprintFunc
 
 public:
 
+    UFUNCTION(BlueprintCallable, Category = "Gameplay")
+    static bool GetClosestInteractableInRange(AActor* InstigatorActor, float InteractionRange, FVector BoxHalfExtent, AActor* &ClosestActor, UActorComponent* &ClosestComponent, FHitResult &ClosestHit);
+
+    UFUNCTION(BlueprintCallable, Category = "Gameplay")
+    static bool GetClosestInteractableInBox(AActor* InstigatorActor, FVector BoxHalfExtent, FVector Origin, FVector End, AActor* &ClosestActor, UActorComponent* &ClosestComponent, FHitResult &ClosestHit);
+
     UFUNCTION(BlueprintCallable, Category = "Debug")
     static void DrawHitPointAndBounds(AActor* HitActor, const FHitResult& Hit);
 
