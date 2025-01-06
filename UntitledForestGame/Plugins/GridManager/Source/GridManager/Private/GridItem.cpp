@@ -96,6 +96,15 @@ void UGridItem::SpawnActor(TSubclassOf<AActor> ActorClass) {
   Actor = Grid->GetWorld()->SpawnActor<AActor>(ActorClass, GetActorTransform(), SpawnParams);
 }
 
+// Destroy the actor
+void UGridItem::DestroyActor() {
+  if (Actor != nullptr)
+  {
+    Actor->Destroy();
+    Actor = nullptr;
+  }
+}
+
 // Set the Actor pointer
 void UGridItem::SetActor(AActor* NewActor) {
   Actor = NewActor;

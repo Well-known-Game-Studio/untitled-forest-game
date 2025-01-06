@@ -51,6 +51,10 @@ public:
     UFUNCTION(BlueprintCallable)
     void SetActor(AActor* NewActor);
 
+    // Destroy the actor
+    UFUNCTION(BlueprintCallable)
+    void DestroyActor();
+
     // Set the Grid pointer
     UFUNCTION(BlueprintCallable)
     void SetGrid(AGrid* NewGrid);

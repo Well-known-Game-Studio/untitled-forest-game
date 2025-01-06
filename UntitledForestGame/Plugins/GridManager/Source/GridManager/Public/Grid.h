@@ -64,13 +64,17 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Grid")
     FVector2D GetGridSize() const;
 
+    // Convert a grid cell to a world position
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    FVector GridToWorld(const FVector2D& GridPosition) const;
+
     // Convert a world position to a grid cell
     UFUNCTION(BlueprintCallable, Category = "Grid")
     FVector2D WorldToGrid(const FVector& WorldPosition) const;
 
     // Can an item be placed at the given world position?
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    bool CanPlaceItemAtWorldPosition(const FVector& WorldPosition, const FVector& ItemSize);
+    bool CanPlaceItemAtWorldPosition(const FVector& WorldPosition, const FVector& ItemSize, FVector2D& OutGridPosition, FTransform& SpawnTransform);
 
     // Can an item be placed at the given cell?
     UFUNCTION(BlueprintCallable, Category = "Grid")
