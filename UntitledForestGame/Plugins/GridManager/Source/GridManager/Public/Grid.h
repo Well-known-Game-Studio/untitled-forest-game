@@ -54,12 +54,16 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Grid")
     void InitializeGrid();
 
+    // Check if a cell is valid
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    bool IsCellValid(int32 X, int32 Y) const;
+
     UFUNCTION(BlueprintCallable, Category = "Grid")
     int32 GetGridCellIndex(int32 X, int32 Y) const;
 
     FGridCell* GetGridCell(int32 X, int32 Y);
 
-    FGridCellAttributes GetGridCellAttributes(int32 X, int32 Y) const;
+    bool GetGridCellAttributes(int32 X, int32 Y, FGridCellAttributes &Attributes) const;
 
     UFUNCTION(BlueprintCallable, Category = "Grid")
     FVector2D GetGridSize() const;
