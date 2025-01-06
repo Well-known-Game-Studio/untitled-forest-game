@@ -366,6 +366,19 @@ void AGrid::RotateItem(UGridItem* Item, float NewRotation) {
   PlaceItem(Item);
 }
 
+void AGrid::DrawCell(const FGridCell& Cell, const FColor &Color, float Duration) {
+  UWorld* World = GetWorld();
+  if (!World) return;
+
+  FVector HalfSize = FVector(CellSize / 2, CellSize / 2, CellSize / 2);
+  FVector Center = Cell.WorldPosition;
+  // Move the center up by half the size so the box is drawn at the correct location
+  // we use the actor's up vector for this to handle the grid's rotation
+  Center += GetActorUpVector() * CellSize / 2;
+  // ensure the box is drawn at the correct location with the correct rotation
+  DrawDebugBox(World, Center, HalfSize, GetActorQuat(), Color, false, Duration);
+}
+
 // Debug: Draw the grid
 void AGrid::DebugDrawGrid()
 {

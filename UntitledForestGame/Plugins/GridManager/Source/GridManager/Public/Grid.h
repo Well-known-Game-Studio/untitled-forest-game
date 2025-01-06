@@ -112,6 +112,10 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Grid")
     bool GetCellInFrontOfActor(const AActor* Actor, FGridCell& Cell);
 
+    // Draw a cell
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    void DrawCell(const FGridCell& Cell, const FColor& Color, float Duration = 0.0f);
+
     // Debugging
     UFUNCTION(BlueprintCallable, Category = "Grid")
     void DebugDrawGrid();
