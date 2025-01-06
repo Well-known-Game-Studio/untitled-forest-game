@@ -394,8 +394,14 @@ void AGrid::DebugDrawGrid()
     FVector Center = Cell.WorldPosition;
     // Move the center up by half the size so the box is drawn at the correct location
     Center.Z += HalfSize.Z;
+    // Set the color to blue by default
+    auto Color = FColor::Blue;
+    // Set the color to green if the cell is occupied
+    if (Cell.bIsOccupied) {
+      Color = FColor::Green;
+    }
     // ensure the box is drawn at the correct location with the correct rotation
-    DrawDebugBox(World, Center, HalfSize, GetActorQuat(), FColor::Blue, false, -1.0f);
+    DrawDebugBox(World, Center, HalfSize, GetActorQuat(), Color, false, -1.0f);
   }
 }
 
