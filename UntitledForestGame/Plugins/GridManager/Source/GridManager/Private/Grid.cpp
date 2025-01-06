@@ -376,7 +376,8 @@ void AGrid::DebugDrawGrid()
     FVector HalfSize = FVector(CellSize / 2, CellSize / 2, CellSize / 2);
     FVector Center = Cell.WorldPosition;
     // Move the center up by half the size so the box is drawn at the correct location
-    Center.Z += HalfSize.Z;
+    // we use the actor's up vector for this to handle the grid's rotation
+    Center += GetActorUpVector() * CellSize / 2;
     // Set the color to blue by default
     auto Color = FColor::Blue;
     // Set the color to green if the cell is occupied
@@ -401,7 +402,8 @@ void AGrid::DebugDrawItem(const UGridItem* Item)
     FVector HalfSize = FVector(CellSize / 2, CellSize / 2, CellSize / 2);
     FVector Center = GridCells[CellIndex].WorldPosition;
     // Move the center up by half the size so the box is drawn at the correct location
-    Center.Z += HalfSize.Z;
+    // we use the actor's up vector for this to handle the grid's rotation
+    Center += GetActorUpVector() * CellSize / 2;
     // ensure the box is drawn at the correct location with the correct rotation
     DrawDebugBox(World, Center, HalfSize, GetActorQuat(), FColor::Green, false, -1.0f);
   }
