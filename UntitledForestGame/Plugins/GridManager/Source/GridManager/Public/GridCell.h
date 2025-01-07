@@ -58,6 +58,9 @@ struct FGridCell
     GENERATED_BODY()
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector2D GridPosition;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector WorldPosition;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)

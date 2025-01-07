@@ -65,16 +65,15 @@ EGroundType GetGroundTypeFromString(const FString& GroundTypeString)
     }
 }
 
-void UGridItem::Initialize(AGrid *NewGrid, const FString &Name, const FVector2D &Origin, int32 InWidth, int32 InHeight)
+void UGridItem::Initialize(AGrid *NewGrid, const FString &Name, const FVector2D &Origin, const FVector &Size)
 {
   Grid = NewGrid;
   ItemName = Name;
+  ItemSize = Size;
   OriginCell = Origin;
-  Width = InWidth;
-  Height = InHeight;
+  GridSize = Grid->ItemSizeToGridSize(ItemSize);
   UpdateOccupiedCells();
 }
-
 
 // Spawn the actor
 void UGridItem::SpawnActor(TSubclassOf<AActor> ActorClass) {
@@ -113,9 +112,6 @@ void UGridItem::SetActor(AActor* NewActor) {
 // Set the Grid pointer
 void UGridItem::SetGrid(AGrid* NewGrid) {
   Grid = NewGrid;
-  // TODO: Update the origin cell
-  // Update the occupied cells
-  UpdateOccupiedCells();
 }
 
 // Get the actor's transform
@@ -124,9 +120,7 @@ FTransform UGridItem::GetActorTransform() const {
   {
     return FTransform();
   }
-  FVector Location = Actor->GetActorLocation();
-  FRotator Rotator(0.0f, 0.0f, Rotation);
-  return FTransform(Rotator, Location);
+  return Actor->GetActorTransform();
 }
 
 // Get the actor's location
@@ -145,6 +139,38 @@ FRotator UGridItem::GetActorRotation() const {
     return FRotator();
   }
   return Actor->GetActorRotation();
+}
+
+FTransform UGridItem::GetSpawnTransform() const {
+  if (Grid == nullptr) {
+    return FTransform();
+  }
+  // if width & height == 1, then the position is simply the same as the origin
+  // cell
+  FGridCell Cell;
+  if (!Grid->GetCellAtGridPosition(OriginCell, Cell)) {
+    return FTransform();
+  }
+  FVector Location = Cell.WorldPosition;
+  // but if width & height > 1, then the position is the center of the item,
+  // which is the middle between the first and last occupied cells
+  if (GridSize.X > 1 || GridSize.Y > 1) {
+    int32 FirstCellIndex = OccupiedCells[0];
+    int32 LastCellIndex = OccupiedCells[OccupiedCells.Num() - 1];
+    FGridCell* FirstCell = Grid->GetGridCellAtIndex(FirstCellIndex);
+    FGridCell* LastCell = Grid->GetGridCellAtIndex(LastCellIndex);
+    if (FirstCell == nullptr || LastCell == nullptr) {
+      return FTransform();
+    }
+    FVector FirstCellLocation = LastCell->WorldPosition;
+    FVector LastCellLocation = FirstCell->WorldPosition;
+    Location = (FirstCellLocation + LastCellLocation) / 2.0f;
+  }
+  // the rotation will be the same as the grid's
+  FRotator Rotator = Grid->GetActorRotation();
+  // but if we've rotated the item, then we need to add the rotation
+  Rotator.Add(0.0f, 0.0f, Rotation);
+  return FTransform(Rotator, Location);
 }
 
 // Set the actor's location
@@ -180,13 +206,12 @@ void UGridItem::UpdateOccupiedCells()
   {
     return;
   }
-  int32 width = Width;
-  int32 height = Height;
+  int32 width = GridSize.X;
+  int32 height = GridSize.Y;
   // swap width and height if the item is rotated 90 or 270 degrees
   if (FMath::IsNearlyEqual(FMath::Fmod(Rotation, 180.0f), 90.0f, 0.01f))
   {
-    width = Height;
-    height = Width;
+    std::swap(width, height);
   }
   OccupiedCells.Reserve(width * height);
   OccupiedCells.Add(Grid->GetGridCellIndex(OriginCell.X, OriginCell.Y));
