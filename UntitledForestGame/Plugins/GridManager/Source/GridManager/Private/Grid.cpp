@@ -94,11 +94,15 @@ FVector AGrid::GridToWorld(const FVector2D& GridPosition) const {
 }
 
 FVector2D AGrid::WorldToGrid(const FVector& WorldPosition) const {
-  FVector RelativePosition = WorldPosition - GetActorLocation();
+  // Transform the world position into the grid's local space
+  FTransform GridTransform = GetActorTransform().Inverse();
+  FVector RelativePosition = GridTransform.TransformPosition(WorldPosition);
 
-  // take into account the AGrid's rotation
-  auto Rotation = GetActorRotation();
-  RelativePosition = FRotator(-Rotation.Pitch, -Rotation.Yaw, -Rotation.Roll).RotateVector(RelativePosition);
+  // if the relative position Z value is > CellSize or < 0, then it
+  // is not on the grid, return an invalid position
+  if (RelativePosition.Z > CellSize || RelativePosition.Z < 0) {
+    return FVector2D(-1, -1);
+  }
 
   int32 x = FMath::RoundToInt(RelativePosition.X / CellSize);
   int32 y = FMath::RoundToInt(RelativePosition.Y / CellSize);
@@ -181,6 +185,14 @@ bool AGrid::GetCellInFrontOfActor(const AActor* Actor, FGridCell& Cell) const {
 
   FVector ActorLocation = Actor->GetActorLocation();
   FVector ActorForwardVector = Actor->GetActorForwardVector();
+
+  // get the up vector for the grid
+  FVector GridUpVector = GetActorUpVector();
+  // project the actor's forward vector onto the plane defined by the grid's up vector
+  ActorForwardVector = ActorForwardVector - FVector::DotProduct(ActorForwardVector, GridUpVector) * GridUpVector;
+  // re-normalize the vector
+  ActorForwardVector.Normalize();
+
   return GetCellInDirectionFromWorldPosition(ActorLocation, ActorForwardVector, Cell);
 }
 
