@@ -13,11 +13,9 @@ void AGrid::InitializeGrid() {
       NewCell.CellType = EGridCellType::Ground;
       NewCell.GridPosition = FVector2D(x, y);
       NewCell.WorldPosition = GridToWorld(FVector2D(x, y));
-      EGroundType ground_type = EGroundType::Grass;
-      NewCell.Attributes = RandomizeGridCellAttributes(ground_type);
       NewCell.bIsOccupied = false;
       NewCell.OccupyingItem = nullptr;
-
+      // Add the cell to the grid
       GridCells.Add(NewCell);
     }
   }
@@ -57,13 +55,27 @@ FGridCell* AGrid::GetGridCellAtIndex(int32 Index) {
   return &GridCells[Index];
 }
 
-bool AGrid::GetGridCellAttributes(int32 X, int32 Y, FGridCellAttributes &Attributes) const {
+///////// Get Grid Cell Attributes /////////
+
+UGridCellAttributes* AGrid::GetGridCellAttributes(int32 X, int32 Y) {
   if (!IsCellValid(X, Y)) {
-    return false;
+    return nullptr;
   }
 
-  Attributes = GridCells[GetGridCellIndex(X, Y)].Attributes;
-  return true;
+  return GridCells[GetGridCellIndex(X, Y)].Attributes;
+}
+
+UGridCellAttributes* AGrid::GetGridCellAttributesAtGridPosition(const FVector2D& GridPosition) {
+  return GetGridCellAttributes(GridPosition.X, GridPosition.Y);
+}
+
+UGridCellAttributes* AGrid::GetGridCellAttributesAtWorldPosition(const FVector& WorldPosition) {
+  FGridCell Cell;
+  if (!GetCellAtWorldPosition(WorldPosition, Cell)) {
+    return nullptr;
+  }
+
+  return Cell.Attributes;
 }
 
 /////// Converters ///////
@@ -126,7 +138,7 @@ UGridItem* AGrid::GetItemAtWorldPosition(const FVector& WorldPosition) {
 
 //// GET CELLS ////
 
-bool AGrid::GetCellAtGridPosition(const FVector2D& GridPosition, FGridCell& Cell) {
+bool AGrid::GetCellAtGridPosition(const FVector2D& GridPosition, FGridCell& Cell) const {
   int32 x = GridPosition.X;
   int32 y = GridPosition.Y;
   int32 Index = GetGridCellIndex(x, y);
@@ -141,7 +153,7 @@ bool AGrid::GetCellAtGridPosition(const FVector2D& GridPosition, FGridCell& Cell
 }
 
 // Get a cell at a specific world position
-bool AGrid::GetCellAtWorldPosition(const FVector& WorldPosition, FGridCell& Cell) {
+bool AGrid::GetCellAtWorldPosition(const FVector& WorldPosition, FGridCell& Cell) const {
   // convert the position to be relative to the grid
   FVector2D GridPosition = WorldToGrid(WorldPosition);
   int32 x = GridPosition.X;
@@ -157,12 +169,12 @@ bool AGrid::GetCellAtWorldPosition(const FVector& WorldPosition, FGridCell& Cell
   return true;
 }
 
-bool AGrid::GetCellInDirectionFromWorldPosition(const FVector& WorldPosition, const FVector& Direction, FGridCell& Cell) {
+bool AGrid::GetCellInDirectionFromWorldPosition(const FVector& WorldPosition, const FVector& Direction, FGridCell& Cell) const {
   auto CellPosition = WorldPosition + Direction * CellSize;
   return GetCellAtWorldPosition(CellPosition, Cell);
 }
 
-bool AGrid::GetCellInFrontOfActor(const AActor* Actor, FGridCell& Cell) {
+bool AGrid::GetCellInFrontOfActor(const AActor* Actor, FGridCell& Cell) const {
   if (!Actor) {
     return false;
   }
@@ -174,14 +186,15 @@ bool AGrid::GetCellInFrontOfActor(const AActor* Actor, FGridCell& Cell) {
 
 ///////// PLACEMENT Checks /////////
 
-bool AGrid::CanPlaceInCell(const FVector &ItemSize, const FGridCell &Cell) {
+bool AGrid::CanPlaceInCell(const FVector &ItemSize, const FGridCell &Cell) const {
   if (!IsCellValid(Cell.GridPosition.X, Cell.GridPosition.Y)) {
     return false;
   }
 
-  auto GridCell = GetGridCellAtXY(Cell.GridPosition.X, Cell.GridPosition.Y);
+  int32 Index = GetGridCellIndex(Cell.GridPosition.X, Cell.GridPosition.Y);
+  auto &GridCell = GridCells[Index];
 
-  if (!GridCell || GridCell->bIsOccupied) {
+  if (GridCell.bIsOccupied) {
     return false;
   }
 
@@ -196,7 +209,7 @@ bool AGrid::CanPlaceInCell(const FVector &ItemSize, const FGridCell &Cell) {
       if (!IsCellValid(CellPosition.X, CellPosition.Y)) {
         return false;
       }
-      int32 Index = GetGridCellIndex(CellPosition.X, CellPosition.Y);
+      Index = GetGridCellIndex(CellPosition.X, CellPosition.Y);
       if (Index < 0 || Index >= GridCells.Num() || GridCells[Index].bIsOccupied) {
         return false;
       }
@@ -206,7 +219,7 @@ bool AGrid::CanPlaceInCell(const FVector &ItemSize, const FGridCell &Cell) {
   return true;
 }
 
-bool AGrid::CanPlaceAtGridPosition(const FVector &ItemSize, const FVector2D &GridPosition) {
+bool AGrid::CanPlaceAtGridPosition(const FVector &ItemSize, const FVector2D &GridPosition) const {
   FGridCell Cell;
   if (!GetCellAtGridPosition(GridPosition, Cell)) {
     return false;
@@ -215,7 +228,7 @@ bool AGrid::CanPlaceAtGridPosition(const FVector &ItemSize, const FVector2D &Gri
   return CanPlaceInCell(ItemSize, Cell);
 }
 
-bool AGrid::CanPlaceAtWorldPosition(const FVector &ItemSize, const FVector &WorldPosition) {
+bool AGrid::CanPlaceAtWorldPosition(const FVector &ItemSize, const FVector &WorldPosition) const {
   FGridCell Cell;
   if (!GetCellAtWorldPosition(WorldPosition, Cell)) {
     return false;
@@ -224,12 +237,12 @@ bool AGrid::CanPlaceAtWorldPosition(const FVector &ItemSize, const FVector &Worl
   return CanPlaceInCell(ItemSize, Cell);
 }
 
-bool AGrid::CanPlaceItemInCell(const UGridItem* Item, const FGridCell& GridCell) {
+bool AGrid::CanPlaceItemInCell(const UGridItem* Item, const FGridCell& GridCell) const {
   if (!Item) return false;
   return CanPlaceInCell(Item->ItemSize, GridCell);
 }
 
-bool AGrid::CanPlaceItemAtGridPosition(const UGridItem* Item, const FVector2D& GridPosition) {
+bool AGrid::CanPlaceItemAtGridPosition(const UGridItem* Item, const FVector2D& GridPosition) const {
   if (!Item) return false;
 
   FGridCell Cell;
@@ -240,7 +253,7 @@ bool AGrid::CanPlaceItemAtGridPosition(const UGridItem* Item, const FVector2D& G
   return CanPlaceItemInCell(Item, Cell);
 }
 
-bool AGrid::CanPlaceItemAtWorldPosition(const UGridItem* Item, const FVector& WorldPosition) {
+bool AGrid::CanPlaceItemAtWorldPosition(const UGridItem* Item, const FVector& WorldPosition) const {
   if (!Item) return false;
 
   FGridCell Cell;
@@ -252,8 +265,7 @@ bool AGrid::CanPlaceItemAtWorldPosition(const UGridItem* Item, const FVector& Wo
 }
 
 // Check if an item can be placed
-bool AGrid::CanPlaceItem(const UGridItem* Item)
-{
+bool AGrid::CanPlaceItem(const UGridItem* Item) const {
   if (!Item) return false;
 
   TArray<int32> CellsToCheck = Item->OccupiedCells;
@@ -360,7 +372,7 @@ void AGrid::RotateItem(UGridItem* Item, float NewRotation) {
   PlaceItem(Item);
 }
 
-void AGrid::DrawCell(const FGridCell& Cell, const FColor &Color, float Duration) {
+void AGrid::DrawCell(const FGridCell& Cell, const FColor &Color, float Duration) const {
   UWorld* World = GetWorld();
   if (!World) return;
 
@@ -374,8 +386,7 @@ void AGrid::DrawCell(const FGridCell& Cell, const FColor &Color, float Duration)
 }
 
 // Debug: Draw the grid
-void AGrid::DebugDrawGrid()
-{
+void AGrid::DebugDrawGrid() const {
   UWorld* World = GetWorld();
   if (!World) return;
 
@@ -397,8 +408,7 @@ void AGrid::DebugDrawGrid()
 }
 
 // Debug: Draw an item
-void AGrid::DebugDrawItem(const UGridItem* Item)
-{
+void AGrid::DebugDrawItem(const UGridItem* Item) const {
   UWorld* World = GetWorld();
   if (!World) return;
 
@@ -448,87 +458,4 @@ void AGrid::Tick(float DeltaTime) {
   } else {
     Super::Tick(DeltaTime);
   }
-}
-
-
-FGridCellAttributes AGrid::RandomizeGridCellAttributes(EGroundType GroundType) {
-  FGridCellAttributes Attributes;
-  Attributes.GroundType = GroundType;
-
-  float min_soil_quality = 0.0f;
-  float max_soil_quality = 1.0f;
-  float min_water_level = 0.0f;
-  float max_water_level = 1.0f;
-
-  // update the min / max values based on the ground type
-  switch (Attributes.GroundType) {
-  case EGroundType::Empty:
-    min_soil_quality = 0.0f;
-    max_soil_quality = 0.0f;
-    min_water_level = 0.0f;
-    max_water_level = 0.0f;
-    break;
-  case EGroundType::Grass:
-    min_soil_quality = 0.5f;
-    max_soil_quality = 1.0f;
-    min_water_level = 0.5f;
-    max_water_level = 1.0f;
-    break;
-  case EGroundType::Dirt:
-    min_soil_quality = 0.0f;
-    max_soil_quality = 0.5f;
-    min_water_level = 0.0f;
-    max_water_level = 0.5f;
-    break;
-  case EGroundType::Sand:
-    min_soil_quality = 0.0f;
-    max_soil_quality = 0.5f;
-    min_water_level = 0.0f;
-    max_water_level = 0.5f;
-    break;
-  case EGroundType::Stone:
-    min_soil_quality = 0.0f;
-    max_soil_quality = 0.5f;
-    min_water_level = 0.0f;
-    max_water_level = 0.5f;
-    break;
-  case EGroundType::Water:
-    min_soil_quality = 0.0f;
-    max_soil_quality = 0.5f;
-    min_water_level = 0.5f;
-    max_water_level = 1.0f;
-    break;
-  case EGroundType::Snow:
-    min_soil_quality = 0.5f;
-    max_soil_quality = 1.0f;
-    min_water_level = 0.5f;
-    max_water_level = 1.0f;
-    break;
-  case EGroundType::Ice:
-    min_soil_quality = 0.5f;
-    max_soil_quality = 1.0f;
-    min_water_level = 0.5f;
-    max_water_level = 1.0f;
-    break;
-  case EGroundType::Mud:
-    min_soil_quality = 0.0f;
-    max_soil_quality = 0.5f;
-    min_water_level = 0.5f;
-    max_water_level = 1.0f;
-    break;
-  case EGroundType::Swamp:
-    min_soil_quality = 0.0f;
-    max_soil_quality = 0.5f;
-    min_water_level = 0.5f;
-    max_water_level = 1.0f;
-    break;
-  default:
-    break;
-  }
-
-  // Randomize the grid cell attributes
-  Attributes.SoilQuality = FMath::RandRange(min_soil_quality, max_soil_quality);
-  Attributes.WaterLevel = FMath::RandRange(min_water_level, max_water_level);
-
-  return Attributes;
 }

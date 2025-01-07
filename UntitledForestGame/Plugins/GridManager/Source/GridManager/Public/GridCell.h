@@ -14,46 +14,20 @@ enum class EGridCellType : uint8
     Unusable,
 };
 
-GRIDMANAGER_API EGridCellType GetGridCellTypeFromString(const FString& CellTypeString);
-
-// Enum for ground types
-UENUM(BlueprintType)
-enum class EGroundType : uint8
-{
-  Empty,
-    Grass,
-    Dirt,
-    Sand,
-    Stone,
-    Water,
-    Snow,
-    Ice,
-    Mud,
-    Swamp,
-    Count
-};
-
-GRIDMANAGER_API EGroundType GetGroundTypeFromString(const FString& GroundTypeString);
-
-// Struct for grid cell atributes
-USTRUCT(BlueprintType)
-struct FGridCellAttributes
+// Class for grid cell atributes (can't be struct since we want pointers to it
+// and subclassing in blueprint)
+UCLASS(BlueprintType, Blueprintable)
+class GRIDMANAGER_API UGridCellAttributes : public UObject
 {
     GENERATED_BODY()
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    EGroundType GroundType;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float SoilQuality;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float WaterLevel;
+public:
+    // Fill out in blueprint or subclass
 };
 
 // Struct for grid cell
-USTRUCT(BlueprintType)
-struct FGridCell
+USTRUCT(BlueprintType, Blueprintable)
+struct GRIDMANAGER_API FGridCell
 {
     GENERATED_BODY()
 
@@ -67,7 +41,7 @@ struct FGridCell
     EGridCellType CellType;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FGridCellAttributes Attributes;
+    UGridCellAttributes* Attributes = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bIsOccupied;

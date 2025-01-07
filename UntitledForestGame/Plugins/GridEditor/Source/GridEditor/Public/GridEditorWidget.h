@@ -4,6 +4,7 @@
 #include "Widgets/SCompoundWidget.h"
 
 class AGrid;
+class UGridCellAttributes;
 
 class SGridEditorWidget : public SCompoundWidget
 {
@@ -33,10 +34,12 @@ private:
     FReply OnPaintCellClicked();
     FReply OnFillGridClicked();
 
-    // Input values for grid cell attributes
-    FString CellTypeInput;
-    float SoilQualityInput;
-    float WaterLevelInput;
+    TSubclassOf<UGridCellAttributes> GridCellAttributesClass;
+
+    // // Input values for grid cell attributes
+    // FString CellTypeInput;
+    // float SoilQualityInput;
+    // float WaterLevelInput;
 
     // Input values for grid dimensions
     int32 GridWidthInput;
