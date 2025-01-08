@@ -39,6 +39,10 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = true))
     AGrid* Grid = nullptr; // Reference to the grid
 
+    // Function to allow blueprint to mark this object for deletion
+    UFUNCTION(BlueprintCallable)
+    void MarkForDeletion();
+
     // Initialization
     UFUNCTION(BlueprintCallable)
     void Initialize(AGrid* NewGrid, const FString& Name, const FVector2D &Origin, const FVector &Size);

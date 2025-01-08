@@ -1,6 +1,10 @@
 #include "GridItem.h"
 #include "Grid.h"
 
+void UGridItem::MarkForDeletion() {
+  ConditionalBeginDestroy();
+}
+
 void UGridItem::Initialize(AGrid *NewGrid, const FString &Name, const FVector2D &Origin, const FVector &Size)
 {
   Grid = NewGrid;

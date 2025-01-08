@@ -22,6 +22,11 @@ class GRIDMANAGER_API UGridCellAttributes : public UObject
     GENERATED_BODY()
 
 public:
+
+    // Function to allow blueprint to mark this object for deletion
+    UFUNCTION(BlueprintCallable)
+    void MarkForDeletion();
+
     // Fill out in blueprint or subclass
 };
 
