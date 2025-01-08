@@ -96,7 +96,7 @@ void SGridEditorWidget::Construct(const FArguments& InArgs)
             .Text(FText::FromString("Soil")) // Default value
             .OnTextCommitted_Lambda([this](const FText& Text, ETextCommit::Type CommitType)
             {
-                CellTypeInput = Text.ToString();
+                // CellTypeInput = Text.ToString();
             })
         ]
         + SVerticalBox::Slot()
@@ -107,7 +107,7 @@ void SGridEditorWidget::Construct(const FArguments& InArgs)
             .Text(FText::FromString("1.0")) // Default soil quality
             .OnTextCommitted_Lambda([this](const FText& Text, ETextCommit::Type CommitType)
             {
-                SoilQualityInput = FCString::Atof(*Text.ToString());
+                // SoilQualityInput = FCString::Atof(*Text.ToString());
             })
         ]
         + SVerticalBox::Slot()
@@ -118,7 +118,7 @@ void SGridEditorWidget::Construct(const FArguments& InArgs)
             .Text(FText::FromString("0.0")) // Default water level
             .OnTextCommitted_Lambda([this](const FText& Text, ETextCommit::Type CommitType)
             {
-                WaterLevelInput = FCString::Atof(*Text.ToString());
+                // WaterLevelInput = FCString::Atof(*Text.ToString());
             })
         ]
         + SVerticalBox::Slot()
@@ -168,12 +168,12 @@ FReply SGridEditorWidget::OnPaintCellClicked()
 {
     if (SelectedGrid.IsValid())
     {
-        FGridCell* Cell = SelectedGrid->GetGridCell(0, 0); // Example: Modify cell at (0, 0)
+        FGridCell* Cell = SelectedGrid->GetGridCellAtXY(0, 0); // Example: Modify cell at (0, 0)
         if (Cell)
         {
-            Cell->CellType = GetGridCellTypeFromString(CellTypeInput);
-            Cell->Attributes.SoilQuality = SoilQualityInput;
-            Cell->Attributes.WaterLevel = WaterLevelInput;
+            // Cell->CellType = GetGridCellTypeFromString(CellTypeInput);
+            // Cell->Attributes.SoilQuality = SoilQualityInput;
+            // Cell->Attributes.WaterLevel = WaterLevelInput;
         }
     }
     return FReply::Handled();
@@ -187,12 +187,12 @@ FReply SGridEditorWidget::OnFillGridClicked()
         {
             for (int32 X = 0; X < SelectedGrid->GridWidth; ++X)
             {
-                FGridCell* Cell = SelectedGrid->GetGridCell(X, Y);
+                FGridCell* Cell = SelectedGrid->GetGridCellAtXY(X, Y);
                 if (Cell)
                 {
-                    Cell->CellType = GetGridCellTypeFromString(CellTypeInput);
-                    Cell->Attributes.SoilQuality = SoilQualityInput;
-                    Cell->Attributes.WaterLevel = WaterLevelInput;
+                    // Cell->CellType = GetGridCellTypeFromString(CellTypeInput);
+                    // Cell->Attributes.SoilQuality = SoilQualityInput;
+                    // Cell->Attributes.WaterLevel = WaterLevelInput;
                 }
             }
         }

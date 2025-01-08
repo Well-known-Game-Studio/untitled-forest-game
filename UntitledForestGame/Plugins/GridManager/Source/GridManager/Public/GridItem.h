@@ -15,33 +15,37 @@ class GRIDMANAGER_API UGridItem : public UObject
     GENERATED_BODY()
 
 public:
-    UPROPERTY(EditAnywhere, BlueprintReadWrite) // , meta = (ExposeOnSpawn = true))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = true))
     FString ItemName;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector2D OriginCell; // Grid coordinates (e.g., bottom-left corner)
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite) // , meta = (ExposeOnSpawn = true))
-    int32 Width = 1; // Number of cells wide
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = true))
+    FVector ItemSize; // Size of the item in world units
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite) // , meta = (ExposeOnSpawn = true))
-    int32 Height = 1; // Number of cells tall
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector2D GridSize; // Number of cells wide and tall
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite) // , meta = (ExposeOnSpawn = true))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = true))
     float Rotation; // Rotation angle in degrees (0, 90, 180, 270)
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<int32> OccupiedCells; // Indices of occupied grid cells
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite) // , meta = (ExposeOnSpawn = true))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = true))
     AActor* Actor = nullptr; // Reference to the spawned actor
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite) // , meta = (ExposeOnSpawn = true))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = true))
     AGrid* Grid = nullptr; // Reference to the grid
+
+    // Function to allow blueprint to mark this object for deletion
+    UFUNCTION(BlueprintCallable)
+    void MarkForDeletion();
 
     // Initialization
     UFUNCTION(BlueprintCallable)
-    void Initialize(AGrid* NewGrid, const FString& Name, const FVector2D &Origin, int32 InWidth, int32 InHeight);
+    void Initialize(AGrid* NewGrid, const FString& Name, const FVector2D &Origin, const FVector &Size);
 
     // Spawn the actor
     UFUNCTION(BlueprintCallable)
@@ -50,6 +54,10 @@ public:
     // Set the Actor pointer
     UFUNCTION(BlueprintCallable)
     void SetActor(AActor* NewActor);
+
+    // Destroy the actor
+    UFUNCTION(BlueprintCallable)
+    void DestroyActor();
 
     // Set the Grid pointer
     UFUNCTION(BlueprintCallable)
@@ -66,6 +74,9 @@ public:
     // Get the actor's rotation
     UFUNCTION(BlueprintCallable)
     FRotator GetActorRotation() const;
+
+    UFUNCTION(BlueprintCallable)
+    FTransform GetSpawnTransform() const;
 
     // Set the actor's location
     UFUNCTION(BlueprintCallable)

@@ -1,0 +1,10 @@
+---,GroundType,WaterLevel,SoilQuality
+"Grass",E_GroundType::Grass,0.1, 0.5
+"Dirt",E_GroundType::Dirt,0.1, 0.5
+"Sand",E_GroundType::Sand,0.1, 0.5
+"Stone",E_GroundType::Stone,0.1, 0.5
+"Water",E_GroundType::Water,0.1, 0.5
+"Snow",E_GroundType::Snow,0.1, 0.5
+"Ice",E_GroundType::Ice,0.1, 0.5
+"Mud",E_GroundType::Mud,0.1, 0.5
+"Swamp",E_GroundType::Swamp,0.1, 0.5
