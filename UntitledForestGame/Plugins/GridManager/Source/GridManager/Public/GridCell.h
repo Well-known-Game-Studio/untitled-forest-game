@@ -27,6 +27,10 @@ public:
     UFUNCTION(BlueprintCallable)
     void MarkForDeletion();
 
+    // override in blueprint or subclass
+    UFUNCTION(BlueprintImplementableEvent)
+    void OnDebugDraw();
+
     // Fill out in blueprint or subclass
 };
 
