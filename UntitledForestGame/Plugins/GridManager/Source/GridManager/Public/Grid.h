@@ -44,9 +44,12 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid Settings")
     float CellSize;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid Settings")
+    TSubclassOf<UGridCell> GridCellClass = UGridCell::StaticClass();
+
     // Grid cells
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-    TArray<FGridCell> GridCells;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Instanced)
+    TArray<UGridCell*> GridCells;
 
     // List of all items managed by this grid
     UPROPERTY()
@@ -75,9 +78,9 @@ public:
     bool IsCellValid(int32 X, int32 Y) const;
 
     int32 GetGridCellIndex(int32 X, int32 Y) const;
-    FGridCell* GetGridCell(const FVector2D& GridPosition);
-    FGridCell* GetGridCellAtXY(int32 X, int32 Y);
-    FGridCell* GetGridCellAtIndex(int32 Index);
+    UGridCell* GetGridCellAtXY(int32 X, int32 Y);
+    UGridCell* GetGridCellAtGridPosition(const FVector2D& GridPosition);
+    UGridCell* GetGridCellAtIndex(int32 Index);
 
     UFUNCTION(BlueprintCallable, Category = "Grid")
     UGridCellAttributes* GetGridCellAttributes(int32 X, int32 Y);
@@ -88,7 +91,7 @@ public:
 
     // Can an item of the given size be placed in the given cell?
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    bool CanPlaceInCell(const FVector &ItemSize, const FGridCell &Cell) const;
+    bool CanPlaceInCell(const FVector &ItemSize, const UGridCell *Cell) const;
     // Can an item of the given size be placed at the given grid position?
     UFUNCTION(BlueprintCallable, Category = "Grid")
     bool CanPlaceAtGridPosition(const FVector &ItemSize, const FVector2D &GridPosition) const;
@@ -102,7 +105,7 @@ public:
 
     // Can an item be placed at the given grid position?
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    bool CanPlaceItemInCell(const UGridItem* Item, const FGridCell& GridCell) const;
+    bool CanPlaceItemInCell(const UGridItem* Item, const UGridCell* GridCell) const;
     // Can an item be placed at the given grid position?
     UFUNCTION(BlueprintCallable, Category = "Grid")
     bool CanPlaceItemAtGridPosition(const UGridItem* Item, const FVector2D& GridPosition) const;
@@ -115,7 +118,7 @@ public:
     bool PlaceItem(UGridItem* Item);
     // Place an item at a specific grid position
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    bool PlaceItemInCell(UGridItem* Item, const FGridCell& GridCell);
+    bool PlaceItemInCell(UGridItem* Item, UGridCell* GridCell);
     // Place an item at a specific grid position
     UFUNCTION(BlueprintCallable, Category = "Grid")
     bool PlaceItemAtGridPosition(UGridItem* Item, const FVector2D& GridPosition);
@@ -133,7 +136,7 @@ public:
     UGridItem* GetItemAtXY(int32 X, int32 Y);
     // get an item from a cell
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    UGridItem* GetItemAtCell(const FGridCell& Cell);
+    UGridItem* GetItemAtCell(const UGridCell* Cell);
     // get an item at a specific grid position
     UFUNCTION(BlueprintCallable, Category = "Grid")
     UGridItem* GetItemAtGridPosition(const FVector2D& GridPosition);
@@ -143,20 +146,20 @@ public:
 
     // Get a cell by world position
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    bool GetCellAtGridPosition(const FVector2D& GridPosition, FGridCell& Cell) const;
+    UGridCell* GetCellAtGridPosition(const FVector2D& GridPosition) const;
     // Get a cell by world position
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    bool GetCellAtWorldPosition(const FVector& WorldPosition, FGridCell& Cell) const;
+    UGridCell* GetCellAtWorldPosition(const FVector& WorldPosition) const;
     // Get the grid cell in front of a location by the direction vector
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    bool GetCellInDirectionFromWorldPosition(const FVector& WorldPosition, const FVector& Direction, FGridCell& Cell) const;
+    UGridCell* GetCellInDirectionFromWorldPosition(const FVector& WorldPosition, const FVector& Direction) const;
     // Get the grid cell in front of a given actor, using the actor's forward vector
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    bool GetCellInFrontOfActor(const AActor* Actor, FGridCell& Cell) const;
+    UGridCell* GetCellInFrontOfActor(const AActor* Actor) const;
 
     // Draw a cell
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    void DrawCell(const FGridCell& Cell, const FColor& Color, float Duration = 0.0f) const;
+    void DrawCell(const UGridCell* Cell, const FColor& Color, float Duration = 0.0f) const;
 
     // Debugging
     UFUNCTION(BlueprintCallable, Category = "Grid")

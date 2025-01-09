@@ -168,7 +168,7 @@ FReply SGridEditorWidget::OnPaintCellClicked()
 {
     if (SelectedGrid.IsValid())
     {
-        FGridCell* Cell = SelectedGrid->GetGridCellAtXY(0, 0); // Example: Modify cell at (0, 0)
+        UGridCell* Cell = SelectedGrid->GetGridCellAtXY(0, 0); // Example: Modify cell at (0, 0)
         if (Cell)
         {
             // Cell->CellType = GetGridCellTypeFromString(CellTypeInput);
@@ -187,7 +187,7 @@ FReply SGridEditorWidget::OnFillGridClicked()
         {
             for (int32 X = 0; X < SelectedGrid->GridWidth; ++X)
             {
-                FGridCell* Cell = SelectedGrid->GetGridCellAtXY(X, Y);
+                UGridCell* Cell = SelectedGrid->GetGridCellAtXY(X, Y);
                 if (Cell)
                 {
                     // Cell->CellType = GetGridCellTypeFromString(CellTypeInput);

@@ -87,18 +87,18 @@ FTransform UGridItem::GetSpawnTransform() const {
   }
   // if width & height == 1, then the position is simply the same as the origin
   // cell
-  FGridCell Cell;
-  if (!Grid->GetCellAtGridPosition(OriginCell, Cell)) {
+  UGridCell *Cell = Grid->GetGridCellAtGridPosition(OriginCell);
+  if (!Cell) {
     return FTransform();
   }
-  FVector Location = Cell.WorldPosition;
+  FVector Location = Cell->WorldPosition;
   // but if width & height > 1, then the position is the center of the item,
   // which is the middle between the first and last occupied cells
   if (GridSize.X > 1 || GridSize.Y > 1) {
     int32 FirstCellIndex = OccupiedCells[0];
     int32 LastCellIndex = OccupiedCells[OccupiedCells.Num() - 1];
-    FGridCell* FirstCell = Grid->GetGridCellAtIndex(FirstCellIndex);
-    FGridCell* LastCell = Grid->GetGridCellAtIndex(LastCellIndex);
+    UGridCell* FirstCell = Grid->GetGridCellAtIndex(FirstCellIndex);
+    UGridCell* LastCell = Grid->GetGridCellAtIndex(LastCellIndex);
     if (FirstCell == nullptr || LastCell == nullptr) {
       return FTransform();
     }

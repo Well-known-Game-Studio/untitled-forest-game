@@ -16,7 +16,7 @@ enum class EGridCellType : uint8
 
 // Class for grid cell atributes (can't be struct since we want pointers to it
 // and subclassing in blueprint)
-UCLASS(BlueprintType, Blueprintable)
+UCLASS(Abstract, BlueprintType, Blueprintable, EditInlineNew, DefaultToInstanced)
 class GRIDMANAGER_API UGridCellAttributes : public UObject
 {
     GENERATED_BODY()
@@ -35,10 +35,22 @@ public:
 };
 
 // Struct for grid cell
-USTRUCT(BlueprintType, Blueprintable)
-struct GRIDMANAGER_API FGridCell
+UCLASS(BlueprintType, Blueprintable, EditInlineNew, DefaultToInstanced)
+class GRIDMANAGER_API UGridCell : public UObject
 {
     GENERATED_BODY()
+
+public:
+
+    // Constructor
+    UGridCell();
+
+    // Allows spawning of objects and things in BP as long as we can get
+    // reference to world
+    virtual UWorld* GetWorld() const override;
+
+    UPROPERTY(Transient)
+    UWorld* World;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector2D GridPosition;
@@ -57,4 +69,13 @@ struct GRIDMANAGER_API FGridCell
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     UGridItem* OccupyingItem;
+
+    // Function to allow blueprint to mark this object for deletion
+    UFUNCTION(BlueprintCallable)
+    void MarkForDeletion();
+
+    // override in blueprint or subclass
+    UFUNCTION(BlueprintImplementableEvent)
+    void OnDebugDraw();
+
 };
