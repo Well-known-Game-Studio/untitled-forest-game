@@ -23,13 +23,20 @@ class GRIDMANAGER_API UGridCellAttributes : public UObject
 
 public:
 
+    // Allows spawning of objects and things in BP as long as we can get
+    // reference to world
+    virtual UWorld* GetWorld() const override;
+
+    UPROPERTY(Transient)
+    UWorld* World;
+
     // Function to allow blueprint to mark this object for deletion
     UFUNCTION(BlueprintCallable)
     void MarkForDeletion();
 
     // override in blueprint or subclass
-    UFUNCTION(BlueprintImplementableEvent)
-    void OnDebugDraw();
+    UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+    void OnDebugDraw(const FVector& CellWorldPosition);
 
     // Fill out in blueprint or subclass
 };
@@ -75,7 +82,7 @@ public:
     void MarkForDeletion();
 
     // override in blueprint or subclass
-    UFUNCTION(BlueprintImplementableEvent)
+    UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
     void OnDebugDraw();
 
 };
