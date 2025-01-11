@@ -52,7 +52,7 @@ public:
     TArray<UGridCell*> GridCells;
 
     // List of all items managed by this grid
-    UPROPERTY()
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Instanced)
     TArray<UGridItem*> ManagedItems;
 
     // Initialize the grid
