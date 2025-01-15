@@ -204,13 +204,13 @@ UGridCell* AGrid::GetCellInFrontOfActor(const AActor* Actor) const {
 ///////// PLACEMENT Checks /////////
 
 bool AGrid::CanPlaceInCell(const FVector &ItemSize, const UGridCell *Cell) const {
-  auto x = Cell->GridPosition.X;
-  auto y = Cell->GridPosition.Y;
-  if (!IsCellValid(x, y) || !Cell) {
+  auto cell_x = Cell->GridPosition.X;
+  auto cell_y = Cell->GridPosition.Y;
+  if (!IsCellValid(cell_x, cell_y) || !Cell) {
     return false;
   }
 
-  int32 Index = GetGridCellIndex(x,y);
+  int32 Index = GetGridCellIndex(cell_x, cell_y);
   auto *GridCell = GridCells[Index];
 
   if (GridCell->bIsOccupied) {
