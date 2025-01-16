@@ -149,19 +149,22 @@ FTransform UGridComponent::GetWorldTransform() const
       Location = (Location + LastCell->WorldPosition) / 2.0f;
     }
   }
-  // the rotation will be the same as the grid's rotated by the item's rotation
-  // along the grid's z-axis vector.
+  // the rotation will be the same as the grid's, but we need to add the item's
+  // rotation to it
 
   // NOTE: we basically copy the code from Kismet math library:
   //  - /Users/Shared/Epic Games/UE_5.5/Engine/Source/Runtime/Engine/Classes/Kismet/KismetMathLibrary.h
   //    - RotatorFromAxisAndAngle
   //    - ComposeRotators
 
+  // Grid rotation
   FRotator Rotator = Grid->GetActorRotation();
-  FVector GridUp = Grid->GetActorUpVector();
-  // make a rotator from the grid's up vector and the rotation angle using
-  FRotator RotationRotator = FQuat(GridUp.GetSafeNormal(), FMath::DegreesToRadians(Rotation)).Rotator();
+  // Item is rotated along its z-axis
+  FVector WorldZ = FVector(0.0f, 0.0f, 1.0f);
+  // make a rotator from the up vector and the rotation angle
+  FRotator RotationRotator = FQuat(WorldZ.GetSafeNormal(), FMath::DegreesToRadians(Rotation)).Rotator();
   // combine the two rotators (order is important here!)
   Rotator = FRotator(FQuat(Rotator)*FQuat(RotationRotator));
+
   return FTransform(Rotator, Location);
 }
