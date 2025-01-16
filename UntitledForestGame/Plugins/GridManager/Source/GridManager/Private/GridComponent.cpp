@@ -92,6 +92,31 @@ void UGridComponent::Update(FVector2D& NewPosition, float NewRotation) {
   OnGridPositionRotationChanged.Broadcast(NewPosition, NewRotation);
 }
 
+bool UGridComponent::RotateTo(float NewRotation) {
+  if (Grid == nullptr) {
+    return false;
+  }
+  return Grid->RotateItem(GetOwner(), NewRotation);
+}
+
+bool UGridComponent::RotateCW() {
+  if (Grid == nullptr) {
+    return false;
+  }
+  // add 90 degrees to the current rotation mod 360
+  float NewRotation = FMath::Fmod(Rotation + 90.0f, 360.0f);
+  return Grid->RotateItem(GetOwner(), NewRotation);
+}
+
+bool UGridComponent::RotateCCW() {
+  if (Grid == nullptr) {
+    return false;
+  }
+  // subtract 90 degrees from the current rotation mod 360
+  float NewRotation = FMath::Fmod(Rotation - 90.0f, 360.0f);
+  return Grid->RotateItem(GetOwner(), NewRotation);
+}
+
 bool UGridComponent::PlaceInGrid(AGrid* NewGrid, FVector2D& GridPosition, float Rotation) {
   if (NewGrid == nullptr) {
     return false;

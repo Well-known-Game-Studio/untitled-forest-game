@@ -125,6 +125,18 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Grid")
     bool PlaceInGrid(AGrid* NewGrid, FVector2D& NewPosition, float NewRotation);
 
+    // Function to Rotate the object on the grid to the specified rotation.
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    bool RotateTo(float NewRotation);
+
+    // Function to Rotate the object on the grid clockwise by 90 degrees.
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    bool RotateCW();
+
+    // Function to Rotate the object on the grid counter-clockwise by 90 degrees.
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    bool RotateCCW();
+
     // Function to get the transform of the object in the world.
     UFUNCTION(BlueprintCallable, Category = "Grid")
     FTransform GetWorldTransform() const;
