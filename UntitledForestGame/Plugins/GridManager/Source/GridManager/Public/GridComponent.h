@@ -11,6 +11,12 @@
 class AGrid;
 class UGridCell;
 
+// Blueprints will bind to this to update the UI
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlacedInGrid);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRemovedFromGrid);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGridChanged, AGrid*, NewGrid);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGridPositionRotationChanged, FVector2D, NewPosition, float, NewRotation);
+
 // This is the grid component class which an actor must have to be able to be
 // placed on the grid. It is responsible for handling the interaction with the
 // grid and the grid manager. The size of the grid is determined by the Grid
@@ -40,7 +46,7 @@ class UGridCell;
 //                 may not be at the center of a grid square, if the object is
 //                 is larger than one grid square and the width or height of the
 //                 object is even.
-UCLASS()
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class GRIDMANAGER_API UGridComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -66,11 +72,15 @@ public:
     // Sets default values for this actor's properties
     UGridComponent();
 
+protected:
+
     // Called on the actor's construction
     virtual void BeginPlay() override;
 
     // Called when the actor is being removed from a level
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+public:
 
     // Called every frame
     virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -118,6 +128,20 @@ public:
     // Function to get the transform of the object in the world.
     UFUNCTION(BlueprintCallable, Category = "Grid")
     FTransform GetWorldTransform() const;
+
+    // Broadcast events
+
+    UPROPERTY(BlueprintAssignable, Category = "Grid")
+    FOnPlacedInGrid OnPlacedInGrid;
+
+    UPROPERTY(BlueprintAssignable, Category = "Grid")
+    FOnRemovedFromGrid OnRemovedFromGrid;
+
+    UPROPERTY(BlueprintAssignable, Category = "Grid")
+    FOnGridChanged OnGridChanged;
+
+    UPROPERTY(BlueprintAssignable, Category = "Grid")
+    FOnGridPositionRotationChanged OnGridPositionRotationChanged;
 
  protected:
 

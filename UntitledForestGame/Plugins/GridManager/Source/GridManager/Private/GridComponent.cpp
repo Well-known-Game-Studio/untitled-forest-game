@@ -27,6 +27,8 @@ void UGridComponent::SetGrid(AGrid* NewGrid) {
   }
   // set the new grid
   Grid = NewGrid;
+  // broadcast that the grid has changed
+  OnGridChanged.Broadcast(Grid);
 }
 
 TArray<UGridCell*> UGridComponent::GetOccupiedCells() const {
@@ -83,6 +85,8 @@ void UGridComponent::Update(FVector2D& NewPosition, float NewRotation) {
       Cell->SetOccupyingItem(Owner);
     }
   }
+  // broadcast that the item has been updated
+  OnGridPositionRotationChanged.Broadcast(NewPosition, NewRotation);
 }
 
 bool UGridComponent::PlaceInGrid(AGrid* NewGrid, FVector2D& GridPosition, float Rotation) {
@@ -91,6 +95,11 @@ bool UGridComponent::PlaceInGrid(AGrid* NewGrid, FVector2D& GridPosition, float 
   }
   SetGrid(NewGrid);
   Update(GridPosition, Rotation);
+  // now set the owning actor's transform to be the center of the occupied cells
+  FTransform NewTransform = GetWorldTransform();
+  GetOwner()->SetActorTransform(NewTransform);
+  // broadcast that the item has been placed
+  OnPlacedInGrid.Broadcast();
   return true;
 }
 
