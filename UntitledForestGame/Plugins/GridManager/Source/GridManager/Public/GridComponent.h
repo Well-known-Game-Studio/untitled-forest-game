@@ -46,7 +46,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGridPositionRotationChanged, FVe
 //                 may not be at the center of a grid square, if the object is
 //                 is larger than one grid square and the width or height of the
 //                 object is even.
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS( ClassGroup=(Custom), Blueprintable, EditInlineNew, meta=(BlueprintSpawnableComponent) )
 class GRIDMANAGER_API UGridComponent : public UActorComponent
 {
 	GENERATED_BODY()
