@@ -5,8 +5,6 @@
 #include "GridCell.h"
 #include "Grid.generated.h"
 
-class UGridItem;
-
 UCLASS(BlueprintType, Blueprintable)
 class GRIDMANAGER_API AGrid : public AActor
 {
@@ -53,7 +51,7 @@ public:
 
     // List of all items managed by this grid
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Instanced)
-    TArray<UGridItem*> ManagedItems;
+    TArray<AActor*> ManagedItems;
 
     // Initialize the grid
     UFUNCTION(BlueprintCallable, Category = "Grid")
@@ -78,9 +76,9 @@ public:
     bool IsCellValid(int32 X, int32 Y) const;
 
     int32 GetGridCellIndex(int32 X, int32 Y) const;
-    UGridCell* GetGridCellAtXY(int32 X, int32 Y);
-    UGridCell* GetGridCellAtGridPosition(const FVector2D& GridPosition);
-    UGridCell* GetGridCellAtIndex(int32 Index);
+    UGridCell* GetGridCellAtXY(int32 X, int32 Y) const;
+    UGridCell* GetGridCellAtGridPosition(const FVector2D& GridPosition) const;
+    UGridCell* GetGridCellAtIndex(int32 Index) const;
 
     UFUNCTION(BlueprintCallable, Category = "Grid")
     UGridCellAttributes* GetGridCellAttributes(int32 X, int32 Y);
@@ -89,60 +87,82 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Grid")
     UGridCellAttributes* GetGridCellAttributesAtWorldPosition(const FVector& WorldPosition);
 
+    // Get the grid component of an item
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    UGridComponent* GetGridComponent(const AActor* Item) const;
+
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    TArray<UGridCell*> GetCells(const FVector2D& GridPosition, const FVector2D& GridSize) const;
+
+    // Is this actor a placeable item
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    bool IsPlaceableItem(const AActor* Item) const;
+
+    // Can the item be rotated to the new rotation
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    bool CanRotateItem(AActor* Item, float NewRotation);
+
+    // Check if the cells at and around the GridPosition are empty. If Item is
+    // not null, then the cells will be considered free if the item is the one
+    // that is occupying them. If Item is nullptr, then any occupying item will
+    // return false.
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    bool CheckIfCellsAreFree(const FVector2D &GridPosition, const FVector2D &ItemSize, const AActor *Item=nullptr) const;
+
     // Can an item of the given size be placed in the given cell?
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    bool CanPlaceInCell(const FVector &ItemSize, const UGridCell *Cell) const;
+    bool CanPlaceInCell(const FVector2D &ItemSize, const UGridCell *Cell) const;
     // Can an item of the given size be placed at the given grid position?
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    bool CanPlaceAtGridPosition(const FVector &ItemSize, const FVector2D &GridPosition) const;
+    bool CanPlaceAtGridPosition(const FVector2D &ItemSize, const FVector2D &GridPosition) const;
     // Can an item of the given size be placed at the given world position?
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    bool CanPlaceAtWorldPosition(const FVector &WorldPosition, const FVector &ItemSize) const;
+    bool CanPlaceAtWorldPosition(const FVector2D &ItemSize, const FVector &WorldPosition) const;
 
-    // Can an item be placed in it's OriginCell?
+    // Can an item be placed at its ActorLocation?
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    bool CanPlaceItem(const UGridItem* Item) const;
+    bool CanPlaceItem(const AActor* Item) const;
 
     // Can an item be placed at the given grid position?
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    bool CanPlaceItemInCell(const UGridItem* Item, const UGridCell* GridCell) const;
+    bool CanPlaceItemInCell(const AActor* Item, const UGridCell* GridCell) const;
     // Can an item be placed at the given grid position?
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    bool CanPlaceItemAtGridPosition(const UGridItem* Item, const FVector2D& GridPosition) const;
+    bool CanPlaceItemAtGridPosition(const AActor* Item, const FVector2D& GridPosition) const;
     // Can an item be placed at the given world position?
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    bool CanPlaceItemAtWorldPosition(const UGridItem* Item, const FVector& WorldPosition) const;
+    bool CanPlaceItemAtWorldPosition(const AActor* Item, const FVector& WorldPosition) const;
 
-    // Place an item at its OriginCell
+    // Place an item at its ActorLocation
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    bool PlaceItem(UGridItem* Item);
+    bool PlaceItem(AActor* Item);
     // Place an item at a specific grid position
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    bool PlaceItemInCell(UGridItem* Item, UGridCell* GridCell);
+    bool PlaceItemInCell(AActor* Item, UGridCell* GridCell);
     // Place an item at a specific grid position
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    bool PlaceItemAtGridPosition(UGridItem* Item, const FVector2D& GridPosition);
+    bool PlaceItemAtGridPosition(AActor* Item, const FVector2D& GridPosition);
 
     // Remove an item
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    bool RemoveItem(UGridItem* Item);
+    bool RemoveItem(AActor* Item);
 
     // Rotate an item
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    void RotateItem(UGridItem* Item, float NewRotation);
+    void RotateItem(AActor* Item, float NewRotation);
 
     // get an item at a specific grid position
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    UGridItem* GetItemAtXY(int32 X, int32 Y);
+    AActor* GetItemAtXY(int32 X, int32 Y);
     // get an item from a cell
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    UGridItem* GetItemAtCell(const UGridCell* Cell);
+    AActor* GetItemAtCell(const UGridCell* Cell);
     // get an item at a specific grid position
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    UGridItem* GetItemAtGridPosition(const FVector2D& GridPosition);
+    AActor* GetItemAtGridPosition(const FVector2D& GridPosition);
     // get an item at a specific world position
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    UGridItem* GetItemAtWorldPosition(const FVector& WorldPosition);
+    AActor* GetItemAtWorldPosition(const FVector& WorldPosition);
 
     // Get a cell by world position
     UFUNCTION(BlueprintCallable, Category = "Grid")
@@ -165,5 +185,5 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Grid")
     void DebugDrawGrid() const;
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    void DebugDrawItem(const UGridItem* Item) const;
+    void DebugDrawItem(const AActor* Item) const;
 };

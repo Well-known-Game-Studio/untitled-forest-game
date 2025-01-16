@@ -32,6 +32,18 @@ void UGridCellAttributes::MarkForDeletion() {
 UGridCell::UGridCell() {
 }
 
+bool UGridCell::IsEmpty() const {
+  return OccupyingItem == nullptr;
+}
+
+bool UGridCell::IsOccupied() const {
+  return OccupyingItem != nullptr;
+}
+
+void UGridCell::SetOccupyingItem(AActor* Item) {
+  OccupyingItem = Item;
+}
+
 UWorld* UGridCell::GetWorld() const
 {
   // if our World reference is valid, return that

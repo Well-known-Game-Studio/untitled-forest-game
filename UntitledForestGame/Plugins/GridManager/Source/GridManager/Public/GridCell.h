@@ -3,8 +3,6 @@
 #include "CoreMinimal.h"
 #include "GridCell.generated.h"
 
-class UGridItem;
-
 // Enum for grid cell types
 UENUM(BlueprintType)
 enum class EGridCellType : uint8
@@ -71,11 +69,14 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     UGridCellAttributes* Attributes = nullptr;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    bool bIsOccupied;
+    UFUNCTION(BlueprintCallable)
+    bool IsEmpty() const;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UGridItem* OccupyingItem;
+    UFUNCTION(BlueprintCallable)
+    bool IsOccupied() const;
+
+    UFUNCTION(BlueprintCallable)
+    void SetOccupyingItem(AActor* Item);
 
     // Function to allow blueprint to mark this object for deletion
     UFUNCTION(BlueprintCallable)
@@ -85,4 +86,10 @@ public:
     UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
     void OnDebugDraw();
 
+protected:
+
+    friend class AGrid;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    AActor* OccupyingItem;
 };
