@@ -85,6 +85,9 @@ void UGridComponent::Update(FVector2D& NewPosition, float NewRotation) {
       Cell->SetOccupyingItem(Owner);
     }
   }
+  // now set the owning actor's transform to be the center of the occupied cells
+  FTransform NewTransform = GetWorldTransform();
+  GetOwner()->SetActorTransform(NewTransform);
   // broadcast that the item has been updated
   OnGridPositionRotationChanged.Broadcast(NewPosition, NewRotation);
 }
@@ -95,9 +98,6 @@ bool UGridComponent::PlaceInGrid(AGrid* NewGrid, FVector2D& GridPosition, float 
   }
   SetGrid(NewGrid);
   Update(GridPosition, Rotation);
-  // now set the owning actor's transform to be the center of the occupied cells
-  FTransform NewTransform = GetWorldTransform();
-  GetOwner()->SetActorTransform(NewTransform);
   // broadcast that the item has been placed
   OnPlacedInGrid.Broadcast();
   return true;
@@ -124,9 +124,19 @@ FTransform UGridComponent::GetWorldTransform() const
       Location = (Location + LastCell->WorldPosition) / 2.0f;
     }
   }
-  // the rotation will be the same as the grid's
+  // the rotation will be the same as the grid's rotated by the item's rotation
+  // along the grid's z-axis vector.
+
+  // NOTE: we basically copy the code from Kismet math library:
+  //  - /Users/Shared/Epic Games/UE_5.5/Engine/Source/Runtime/Engine/Classes/Kismet/KismetMathLibrary.h
+  //    - RotatorFromAxisAndAngle
+  //    - ComposeRotators
+
   FRotator Rotator = Grid->GetActorRotation();
-  // but if we've rotated the item, then we need to add the rotation along the grid's z-axis
-  Rotator.Add(0.0f, 0.0f, Rotation);
+  FVector GridUp = Grid->GetActorUpVector();
+  // make a rotator from the grid's up vector and the rotation angle using
+  FRotator RotationRotator = FQuat(GridUp.GetSafeNormal(), FMath::DegreesToRadians(Rotation)).Rotator();
+  // combine the two rotators (order is important here!)
+  Rotator = FRotator(FQuat(Rotator)*FQuat(RotationRotator));
   return FTransform(Rotator, Location);
 }

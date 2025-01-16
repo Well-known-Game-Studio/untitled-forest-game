@@ -149,7 +149,7 @@ public:
 
     // Rotate an item
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    void RotateItem(AActor* Item, float NewRotation);
+    bool RotateItem(AActor* Item, float NewRotation);
 
     // get an item at a specific grid position
     UFUNCTION(BlueprintCallable, Category = "Grid")

@@ -432,11 +432,12 @@ bool AGrid::CanRotateItem(AActor* Item, float NewRotation) {
 }
 
 // Rotate an item
-void AGrid::RotateItem(AActor* Item, float NewRotation) {
-  if (!Item) return;
-  if (!CanRotateItem(Item, NewRotation)) return;
+bool AGrid::RotateItem(AActor* Item, float NewRotation) {
+  if (!Item) return false;
+  if (!CanRotateItem(Item, NewRotation)) return false;
   auto GridComponent = GetGridComponent(Item);
   GridComponent->Update(GridComponent->Position, NewRotation);
+  return true;
 }
 
 void AGrid::DrawCell(const UGridCell* Cell, const FColor &Color, float Duration) const {
