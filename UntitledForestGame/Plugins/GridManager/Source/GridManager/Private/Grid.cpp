@@ -1,5 +1,5 @@
 #include "Grid.h"
-#include "GridItem.h"
+#include "GridComponent.h"
 #include "DrawDebugHelpers.h"
 
 // Initialize the grid
@@ -14,7 +14,6 @@ void AGrid::InitializeGrid() {
       NewCell->CellType = EGridCellType::Ground;
       NewCell->GridPosition = FVector2D(x, y);
       NewCell->WorldPosition = GridToWorld(FVector2D(x, y));
-      NewCell->bIsOccupied = false;
       NewCell->OccupyingItem = nullptr;
       // Add the cell to the grid
       GridCells.Add(NewCell);
@@ -36,7 +35,7 @@ FVector2D AGrid::GetGridSize() const {
 
 /////// Get Grid Cell ///////
 
-UGridCell* AGrid::GetGridCellAtXY(int32 X, int32 Y) {
+UGridCell* AGrid::GetGridCellAtXY(int32 X, int32 Y) const {
   if (!IsCellValid(X, Y)) {
     return nullptr;
   }
@@ -44,11 +43,11 @@ UGridCell* AGrid::GetGridCellAtXY(int32 X, int32 Y) {
   return GridCells[GetGridCellIndex(X, Y)];
 }
 
-UGridCell* AGrid::GetGridCellAtGridPosition(const FVector2D& GridPosition) {
+UGridCell* AGrid::GetGridCellAtGridPosition(const FVector2D& GridPosition) const {
   return GetGridCellAtXY(GridPosition.X, GridPosition.Y);
 }
 
-UGridCell* AGrid::GetGridCellAtIndex(int32 Index) {
+UGridCell* AGrid::GetGridCellAtIndex(int32 Index) const {
   if (Index < 0 || Index >= GridCells.Num()) {
     return nullptr;
   }
@@ -118,11 +117,11 @@ FVector2D AGrid::WorldToGrid(const FVector& WorldPosition) const {
 
 //// GET ITEMS ////
 
-UGridItem* AGrid::GetItemAtXY(int32 X, int32 Y) {
+AActor* AGrid::GetItemAtXY(int32 X, int32 Y) {
   return GetItemAtGridPosition(FVector2D(X, Y));
 }
 
-UGridItem* AGrid::GetItemAtCell(const UGridCell* Cell) {
+AActor* AGrid::GetItemAtCell(const UGridCell* Cell) {
   if (!Cell) {
     return nullptr;
   }
@@ -130,7 +129,7 @@ UGridItem* AGrid::GetItemAtCell(const UGridCell* Cell) {
   return GetItemAtGridPosition(Cell->GridPosition);
 }
 
-UGridItem* AGrid::GetItemAtGridPosition(const FVector2D& GridPosition) {
+AActor* AGrid::GetItemAtGridPosition(const FVector2D& GridPosition) {
   UGridCell *Cell = GetGridCellAtGridPosition(GridPosition);
   if (!Cell) {
     return nullptr;
@@ -140,7 +139,7 @@ UGridItem* AGrid::GetItemAtGridPosition(const FVector2D& GridPosition) {
 }
 
 // Get an item at a specific world position
-UGridItem* AGrid::GetItemAtWorldPosition(const FVector& WorldPosition) {
+AActor* AGrid::GetItemAtWorldPosition(const FVector& WorldPosition) {
   UGridCell *Cell = GetCellAtWorldPosition(WorldPosition);
   if (!Cell) {
     return nullptr;
@@ -201,44 +200,64 @@ UGridCell* AGrid::GetCellInFrontOfActor(const AActor* Actor) const {
   return GetCellInDirectionFromWorldPosition(ActorLocation, ActorForwardVector);
 }
 
+///////// Actor Checks /////////
+
+UGridComponent* AGrid::GetGridComponent(const AActor* Item) const {
+  if (!Item) return nullptr;
+
+  return Cast<UGridComponent>(Item->GetComponentByClass(UGridComponent::StaticClass()));
+}
+
+bool AGrid::IsPlaceableItem(const AActor* Item) const {
+  if (!Item) return false;
+
+  return GetGridComponent(Item) != nullptr;
+}
+
 ///////// PLACEMENT Checks /////////
 
-bool AGrid::CanPlaceInCell(const FVector &ItemSize, const UGridCell *Cell) const {
-  auto cell_x = Cell->GridPosition.X;
-  auto cell_y = Cell->GridPosition.Y;
-  if (!IsCellValid(cell_x, cell_y) || !Cell) {
+bool AGrid::CheckIfCellsAreFree(const FVector2D &GridPosition, const FVector2D &ItemSize, const AActor* Item) const {
+  if (!IsCellValid(GridPosition.X, GridPosition.Y)) {
     return false;
   }
 
-  int32 Index = GetGridCellIndex(cell_x, cell_y);
-  auto *GridCell = GridCells[Index];
-
-  if (GridCell->bIsOccupied) {
-    return false;
+  // check the cell at grid position
+  int32 Index = GetGridCellIndex(GridPosition.X, GridPosition.Y);
+  if (GridCells[Index]->IsOccupied()) {
+    if (Item == nullptr || GridCells[Index]->OccupyingItem != Item) {
+      return false;
+    }
   }
 
+  // now check the cells around it
+  int32 width = ItemSize.X;
+  int32 height = ItemSize.Y;
   // for the size of the item (width / height)
-  FVector2D ItemGridSize = ItemSizeToGridSize(ItemSize);
-  int32 width = ItemGridSize.X;
-  int32 height = ItemGridSize.Y;
-
   for (int32 y = -height/2; y < height/2; ++y) {
     for (int32 x = -width/2; x < width/2; ++x) {
-      FVector2D CellPosition = Cell->GridPosition + FVector2D(x, y);
+      FVector2D CellPosition = GridPosition + FVector2D(x, y);
       if (!IsCellValid(CellPosition.X, CellPosition.Y)) {
         return false;
       }
       Index = GetGridCellIndex(CellPosition.X, CellPosition.Y);
-      if (Index < 0 || Index >= GridCells.Num() || GridCells[Index]->bIsOccupied) {
-        return false;
+      if (GridCells[Index]->IsOccupied()) {
+        if (Item == nullptr || GridCells[Index]->OccupyingItem != Item) {
+          return false;
+        }
       }
     }
   }
-
   return true;
 }
 
-bool AGrid::CanPlaceAtGridPosition(const FVector &ItemSize, const FVector2D &GridPosition) const {
+bool AGrid::CanPlaceInCell(const FVector2D &ItemSize, const UGridCell *Cell) const {
+  if (!Cell) {
+    return false;
+  }
+  return CheckIfCellsAreFree(Cell->GridPosition, ItemSize, nullptr);
+}
+
+bool AGrid::CanPlaceAtGridPosition(const FVector2D &ItemSize, const FVector2D &GridPosition) const {
   UGridCell *Cell = GetCellAtGridPosition(GridPosition);
   if (!Cell) {
     return false;
@@ -247,7 +266,7 @@ bool AGrid::CanPlaceAtGridPosition(const FVector &ItemSize, const FVector2D &Gri
   return CanPlaceInCell(ItemSize, Cell);
 }
 
-bool AGrid::CanPlaceAtWorldPosition(const FVector &ItemSize, const FVector &WorldPosition) const {
+bool AGrid::CanPlaceAtWorldPosition(const FVector2D &ItemSize, const FVector &WorldPosition) const {
   UGridCell *Cell = GetCellAtWorldPosition(WorldPosition);
   if (!Cell) {
     return false;
@@ -256,15 +275,17 @@ bool AGrid::CanPlaceAtWorldPosition(const FVector &ItemSize, const FVector &Worl
   return CanPlaceInCell(ItemSize, Cell);
 }
 
-bool AGrid::CanPlaceItemInCell(const UGridItem* Item, const UGridCell* GridCell) const {
+bool AGrid::CanPlaceItemInCell(const AActor* Item, const UGridCell* GridCell) const {
   if (!Item) return false;
   if (!GridCell) return false;
-  return CanPlaceInCell(Item->ItemSize, GridCell);
+  if (!IsPlaceableItem(Item)) return false;
+  auto GridComponent = GetGridComponent(Item);
+  return CanPlaceInCell(GridComponent->Size, GridCell);
 }
 
-bool AGrid::CanPlaceItemAtGridPosition(const UGridItem* Item, const FVector2D& GridPosition) const {
+bool AGrid::CanPlaceItemAtGridPosition(const AActor* Item, const FVector2D& GridPosition) const {
   if (!Item) return false;
-
+  if (!IsPlaceableItem(Item)) return false;
   UGridCell *Cell = GetCellAtGridPosition(GridPosition);
   if (!Cell) {
     return false;
@@ -273,9 +294,9 @@ bool AGrid::CanPlaceItemAtGridPosition(const UGridItem* Item, const FVector2D& G
   return CanPlaceItemInCell(Item, Cell);
 }
 
-bool AGrid::CanPlaceItemAtWorldPosition(const UGridItem* Item, const FVector& WorldPosition) const {
+bool AGrid::CanPlaceItemAtWorldPosition(const AActor* Item, const FVector& WorldPosition) const {
   if (!Item) return false;
-
+  if (!IsPlaceableItem(Item)) return false;
   UGridCell *Cell = GetCellAtWorldPosition(WorldPosition);
   if (!Cell) {
     return false;
@@ -285,29 +306,47 @@ bool AGrid::CanPlaceItemAtWorldPosition(const UGridItem* Item, const FVector& Wo
 }
 
 // Check if an item can be placed
-bool AGrid::CanPlaceItem(const UGridItem* Item) const {
+bool AGrid::CanPlaceItem(const AActor* Item) const {
   if (!Item) return false;
+  if (!IsPlaceableItem(Item)) return false;
+  // get the world position of the item
+  FVector WorldPosition = Item->GetActorLocation();
+  return CanPlaceItemAtWorldPosition(Item, WorldPosition);
+}
 
-  TArray<int32> CellsToCheck = Item->OccupiedCells;
+///////// Placement Checks /////////
 
-  for (int32 CellIndex : CellsToCheck) {
-    if (CellIndex < 0 || CellIndex >= GridCells.Num() || GridCells[CellIndex]->bIsOccupied) {
-      return false; // Out of bounds or occupied
+TArray<UGridCell*> AGrid::GetCells(const FVector2D& GridPosition, const FVector2D& GridSize) const {
+  TArray<UGridCell*> Cells;
+  for (int32 y = -GridSize.Y/2; y < GridSize.Y/2; ++y) {
+    for (int32 x = -GridSize.X/2; x < GridSize.X/2; ++x) {
+      FVector2D CellPosition = GridPosition + FVector2D(x, y);
+      UGridCell *Cell = GetGridCellAtGridPosition(CellPosition);
+      if (Cell) {
+        Cells.Add(Cell);
+      }
     }
   }
 
-  return true;
+  return Cells;
 }
 
 ///////// PLACEMENT /////////
 
 // Place an item on the grid
-bool AGrid::PlaceItem(UGridItem* Item)
-{
+bool AGrid::PlaceItem(AActor* Item) {
   if (!Item) return false;
+  if (!IsPlaceableItem(Item)) return false;
+  auto GridComponent = GetGridComponent(Item);
+
+  // get the world position of the item
+  FVector WorldPosition = Item->GetActorLocation();
+
+  // get the grid position of the item
+  FVector2D GridPosition = WorldToGrid(WorldPosition);
 
   // get the cell at the grid position for the item's origin cell
-  UGridCell *Cell = GetCellAtGridPosition(Item->OriginCell);
+  UGridCell *Cell = GetCellAtGridPosition(GridPosition);
   if (!Cell) {
     return false;
   }
@@ -315,26 +354,21 @@ bool AGrid::PlaceItem(UGridItem* Item)
   return PlaceItemInCell(Item, Cell);
 }
 
-bool AGrid::PlaceItemInCell(UGridItem* Item, UGridCell* GridCell) {
+bool AGrid::PlaceItemInCell(AActor* Item, UGridCell* GridCell) {
   if (!Item) return false;
   if (!GridCell) return false;
+  if (!IsPlaceableItem(Item)) return false;
+  auto GridComponent = GetGridComponent(Item);
 
   if (!CanPlaceItemInCell(Item, GridCell)) {
-    UE_LOG(LogTemp, Warning, TEXT("Cannot place item: %s"), *Item->ItemName);
+    UE_LOG(LogTemp, Warning, TEXT("Cannot place item: %s"), *Item->GetName());
     return false;
   }
 
   // Update the Item to the new position, which will update the occupied cells
-  Item->Update(GridCell->GridPosition, Item->Rotation);
+  GridComponent->PlaceInGrid(this, GridCell->GridPosition, GridComponent->Rotation);
 
-  TArray<int32> CellsToOccupy = Item->OccupiedCells;
-
-  for (int32 CellIndex : CellsToOccupy) {
-    GridCells[CellIndex]->bIsOccupied = true;
-    GridCells[CellIndex]->OccupyingItem = Item;
-  }
-
-  UE_LOG(LogTemp, Log, TEXT("Item placed: %s"), *Item->ItemName);
+  UE_LOG(LogTemp, Log, TEXT("Item placed: %s"), *Item->GetName());
 
   // add the item to the grid
   ManagedItems.Add(Item);
@@ -342,7 +376,7 @@ bool AGrid::PlaceItemInCell(UGridItem* Item, UGridCell* GridCell) {
   return true;
 }
 
-bool AGrid::PlaceItemAtGridPosition(UGridItem* Item, const FVector2D& GridPosition) {
+bool AGrid::PlaceItemAtGridPosition(AActor* Item, const FVector2D& GridPosition) {
   if (!Item) return false;
 
   UGridCell *Cell = GetCellAtGridPosition(GridPosition);
@@ -356,18 +390,24 @@ bool AGrid::PlaceItemAtGridPosition(UGridItem* Item, const FVector2D& GridPositi
 ///////// REMOVAL /////////
 
 // Remove an item from the grid
-bool AGrid::RemoveItem(UGridItem* Item)
+bool AGrid::RemoveItem(AActor* Item)
 {
   if (!Item) return false;
+  if (!IsPlaceableItem(Item)) return false;
+  auto GridComponent = GetGridComponent(Item);
 
-  TArray<int32> CellsToFree = Item->OccupiedCells;
-
-  for (int32 CellIndex : CellsToFree) {
-    GridCells[CellIndex]->bIsOccupied = false;
-    GridCells[CellIndex]->OccupyingItem = nullptr;
+  TArray<UGridCell*> CellsToFree = GridComponent->OccupiedCells;
+  for (UGridCell* Cell : CellsToFree) {
+    if (!Cell) {
+      continue;
+    }
+    if (!Cell->IsOccupied()) {
+      continue;
+    }
+    Cell->SetOccupyingItem(nullptr);
   }
 
-  UE_LOG(LogTemp, Log, TEXT("Item removed: %s"), *Item->ItemName);
+  UE_LOG(LogTemp, Log, TEXT("Item removed: %s"), *Item->GetName());
 
   // remove the item from the grid
   ManagedItems.Remove(Item);
@@ -377,20 +417,27 @@ bool AGrid::RemoveItem(UGridItem* Item)
 
 ///////// MODIFICATION /////////
 
+bool AGrid::CanRotateItem(AActor* Item, float NewRotation) {
+  if (!Item) return false;
+  if (!ManagedItems.Contains(Item)) return false;
+  auto GridComponent = GetGridComponent(Item);
+  if (!GridComponent) return false;
+  if (GridComponent->Rotation == NewRotation) return false;
+  // get the rotated size of the item
+  FVector2D RotatedSize = GridComponent->GetSizeAtRotation(NewRotation);
+  // now get the position of the item
+  FVector2D GridPosition = GridComponent->Position;
+  // now check to see if we can place the item
+  return CheckIfCellsAreFree(GridPosition, RotatedSize, Item);
+}
+
 // Rotate an item
-void AGrid::RotateItem(UGridItem* Item, float NewRotation) {
-  if (!Item) return;
-
-  RemoveItem(Item);
-
-  Item->Update(Item->OriginCell, NewRotation);
-
-  if (!CanPlaceItem(Item)) {
-    UE_LOG(LogTemp, Warning, TEXT("Invalid rotation placement."));
-    return;
-  }
-
-  PlaceItem(Item);
+bool AGrid::RotateItem(AActor* Item, float NewRotation) {
+  if (!Item) return false;
+  if (!CanRotateItem(Item, NewRotation)) return false;
+  auto GridComponent = GetGridComponent(Item);
+  GridComponent->Update(GridComponent->Position, NewRotation);
+  return true;
 }
 
 void AGrid::DrawCell(const UGridCell* Cell, const FColor &Color, float Duration) const {
@@ -413,38 +460,29 @@ void AGrid::DebugDrawGrid() const {
   if (!World) return;
 
   for (const UGridCell* Cell : GridCells) {
-    FVector HalfSize = FVector(CellSize / 2, CellSize / 2, CellSize / 2);
-    FVector Center = Cell->WorldPosition;
-    // Move the center up by half the size so the box is drawn at the correct location
-    // we use the actor's up vector for this to handle the grid's rotation
-    Center += GetActorUpVector() * CellSize / 2;
     // Set the color to blue by default
     auto Color = FColor::Blue;
     // Set the color to green if the cell is occupied
-    if (Cell->bIsOccupied) {
+    if (Cell->IsOccupied()) {
       Color = FColor::Green;
     }
-    // ensure the box is drawn at the correct location with the correct rotation
-    DrawDebugBox(World, Center, HalfSize, GetActorQuat(), Color, false, -1.0f);
+    DrawCell(Cell, Color, -1.0f);
   }
 }
 
 // Debug: Draw an item
-void AGrid::DebugDrawItem(const UGridItem* Item) const {
+void AGrid::DebugDrawItem(const AActor* Item) const {
   UWorld* World = GetWorld();
   if (!World) return;
 
   if (!Item) return;
+  if (!ManagedItems.Contains(Item)) return;
+  auto GridComponent = GetGridComponent(Item);
+  if (!GridComponent) return;
 
-  TArray<int32> Cells = Item->OccupiedCells;
-  for (int32 CellIndex : Cells) {
-    FVector HalfSize = FVector(CellSize / 2, CellSize / 2, CellSize / 2);
-    FVector Center = GridCells[CellIndex]->WorldPosition;
-    // Move the center up by half the size so the box is drawn at the correct location
-    // we use the actor's up vector for this to handle the grid's rotation
-    Center += GetActorUpVector() * CellSize / 2;
-    // ensure the box is drawn at the correct location with the correct rotation
-    DrawDebugBox(World, Center, HalfSize, GetActorQuat(), FColor::Green, false, -1.0f);
+  TArray<UGridCell*> Cells = GridComponent->OccupiedCells;
+  for (UGridCell* Cell : Cells) {
+    DrawCell(Cell, FColor::Green, -1.0f);
   }
 }
 
