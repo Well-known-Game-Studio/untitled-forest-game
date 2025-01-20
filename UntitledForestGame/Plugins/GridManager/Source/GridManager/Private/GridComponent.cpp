@@ -166,5 +166,9 @@ FTransform UGridComponent::GetWorldTransform() const
   // combine the two rotators (order is important here!)
   Rotator = FRotator(FQuat(Rotator)*FQuat(RotationRotator));
 
-  return FTransform(Rotator, Location);
+  // we don't want to change any scaling that may have been applied, so we get
+  // our owner's scale and apply it
+  FVector Scale = GetOwner()->GetActorScale3D();
+
+  return FTransform(Rotator, Location, Scale);
 }
