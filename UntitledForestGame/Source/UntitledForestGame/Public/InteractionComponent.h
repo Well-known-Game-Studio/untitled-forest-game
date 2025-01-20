@@ -7,7 +7,7 @@
 #include "InteractableInterface.h"
 #include "InteractionComponent.generated.h"
 
-UCLASS()
+UCLASS( ClassGroup=(Custom), Blueprintable, EditInlineNew, meta=(BlueprintSpawnableComponent) )
 class UNTITLEDFORESTGAME_API UInteractionComponent : public UActorComponent
 {
 	GENERATED_BODY()
