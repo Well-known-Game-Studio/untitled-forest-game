@@ -117,12 +117,12 @@ bool UGridComponent::RotateCCW() {
   return Grid->RotateItem(GetOwner(), NewRotation);
 }
 
-bool UGridComponent::PlaceInGrid(AGrid* NewGrid, FVector2D& GridPosition, float Rotation) {
+bool UGridComponent::PlaceInGrid(AGrid* NewGrid, FVector2D& NewPosition, float NewRotation) {
   if (NewGrid == nullptr) {
     return false;
   }
   SetGrid(NewGrid);
-  Update(GridPosition, Rotation);
+  Update(NewPosition, NewRotation);
   // broadcast that the item has been placed
   OnPlacedInGrid.Broadcast();
   return true;
