@@ -275,7 +275,7 @@ bool AGrid::CanPlaceAtWorldPosition(const FVector2D &ItemSize, const FVector &Wo
   return CanPlaceInCell(ItemSize, Cell);
 }
 
-bool AGrid::CanPlaceItemInCell(const AActor* Item, const UGridCell* GridCell) const {
+bool AGrid::CanPlaceItemInCell_Implementation(const AActor* Item, const UGridCell* GridCell) const {
   if (!Item) return false;
   if (!GridCell) return false;
   if (!IsPlaceableItem(Item)) return false;
