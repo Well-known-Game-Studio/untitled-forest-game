@@ -124,7 +124,7 @@ public:
     bool CanPlaceItem(const AActor* Item) const;
 
     // Can an item be placed at the given grid position?
-    UFUNCTION(BlueprintCallable, Category = "Grid")
+    UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Grid")
     bool CanPlaceItemInCell(const AActor* Item, const UGridCell* GridCell) const;
     // Can an item be placed at the given grid position?
     UFUNCTION(BlueprintCallable, Category = "Grid")
