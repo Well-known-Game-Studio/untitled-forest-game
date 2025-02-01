@@ -3,6 +3,8 @@
 #include "CoreMinimal.h"
 #include "GridCell.generated.h"
 
+class AGrid;
+
 // Enum for grid cell types
 UENUM(BlueprintType)
 enum class EGridCellType : uint8
@@ -61,9 +63,6 @@ public:
     FVector2D GridPosition;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FVector WorldPosition;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     EGridCellType CellType;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -78,6 +77,9 @@ public:
     UFUNCTION(BlueprintCallable)
     void SetOccupyingItem(AActor* Item);
 
+    UFUNCTION(BlueprintCallable)
+    FVector GetWorldPosition() const;
+
     // Function to allow blueprint to mark this object for deletion
     UFUNCTION(BlueprintCallable)
     void MarkForDeletion();
@@ -89,6 +91,10 @@ public:
 protected:
 
     friend class AGrid;
+
+    // Pointer to the grid this cell belongs to
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    AGrid* Grid;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     AActor* OccupyingItem;

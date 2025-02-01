@@ -17,6 +17,9 @@ public:
 #if WITH_EDITOR
     /** Tick that runs ONLY in the editor viewport.*/
     void EditorTick(float DeltaTime);
+
+    // Called when a property is changed in the editor
+    void PostEditChangeProperty(FPropertyChangedEvent& e);
 #endif
 
     /** Tick that runs ONLY in the editor viewport.*/
@@ -34,13 +37,15 @@ public:
 
     // Grid dimensions and settings
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid Settings")
-    int32 GridWidth;
+    int32 GridWidth=1;
 
+    // Grid dimensions and settings
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid Settings")
-    int32 GridHeight;
+    int32 GridHeight=1;
 
+    // Size of each cell in the grid in cm
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid Settings")
-    float CellSize;
+    float CellSize=100.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid Settings")
     TSubclassOf<UGridCell> GridCellClass = UGridCell::StaticClass();

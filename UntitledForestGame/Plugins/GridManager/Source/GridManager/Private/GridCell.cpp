@@ -1,4 +1,5 @@
 #include "GridCell.h"
+#include "Grid.h"
 
 //// GridCellAttributes
 
@@ -63,6 +64,13 @@ UWorld* UGridCell::GetWorld() const
   }
   // if those fail, return nullptr :/
   return nullptr;
+}
+
+FVector UGridCell::GetWorldPosition() const {
+  if (!Grid) {
+    return FVector::ZeroVector;
+  }
+  return Grid->GridToWorld(GridPosition);
 }
 
 void UGridCell::MarkForDeletion() {
