@@ -140,13 +140,13 @@ FTransform UGridComponent::GetWorldTransform() const
   if (Cell == nullptr) {
     return FTransform();
   }
-  FVector Location = Cell->WorldPosition;
+  FVector Location = Cell->GetWorldPosition();
   // if the width > 1 or the height > 1, then the position is the center of the
   // occupied cells, which is just midway between the first and last cells
   if (OccupiedCells.Num() > 1) {
     UGridCell* LastCell = OccupiedCells[OccupiedCells.Num() - 1];
     if (LastCell != nullptr) {
-      Location = (Location + LastCell->WorldPosition) / 2.0f;
+      Location = (Location + LastCell->GetWorldPosition()) / 2.0f;
     }
   }
   // the rotation will be the same as the grid's, but we need to add the item's

@@ -12,8 +12,8 @@ void AGrid::InitializeGrid() {
       UGridCell* NewCell = NewObject<UGridCell>(this, GridCellClass);
       // set the cell type to be Ground
       NewCell->CellType = EGridCellType::Ground;
+      NewCell->Grid = this;
       NewCell->GridPosition = FVector2D(x, y);
-      NewCell->WorldPosition = GridToWorld(FVector2D(x, y));
       NewCell->OccupyingItem = nullptr;
       // Add the cell to the grid
       GridCells.Add(NewCell);
@@ -32,6 +32,24 @@ int32 AGrid::GetGridCellIndex(int32 X, int32 Y) const {
 FVector2D AGrid::GetGridSize() const {
   return FVector2D(GridWidth, GridHeight);
 }
+
+/// Post edit change property
+#if WITH_EDITOR
+void AGrid::PostEditChangeProperty(FPropertyChangedEvent& e) {
+  Super::PostEditChangeProperty(e);
+
+  FName PropertyName = (e.Property != NULL) ? e.Property->GetFName() : NAME_None;
+  if (PropertyName == GET_MEMBER_NAME_CHECKED(AGrid, GridWidth) || PropertyName == GET_MEMBER_NAME_CHECKED(AGrid, GridHeight)) {
+
+    // Ensure the grid size is at least 1
+    GridWidth = FMath::Max(1, GridWidth);
+    GridHeight = FMath::Max(1, GridHeight);
+
+    // Initialize the grid
+    InitializeGrid();
+  }
+}
+#endif
 
 /////// Get Grid Cell ///////
 
@@ -446,7 +464,7 @@ void AGrid::DrawCell(const UGridCell* Cell, const FColor &Color, float Duration)
   if (!Cell) return;
 
   FVector HalfSize = FVector(CellSize / 2, CellSize / 2, CellSize / 2);
-  FVector Center = Cell->WorldPosition;
+  FVector Center = GridToWorld(Cell->GridPosition);
   // Move the center up by half the size so the box is drawn at the correct location
   // we use the actor's up vector for this to handle the grid's rotation
   Center += GetActorUpVector() * CellSize / 2;
