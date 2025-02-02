@@ -250,16 +250,18 @@ bool AGrid::CheckIfCellsAreFree(const FVector2D &GridPosition, const FVector2D &
   // now check the cells around it
   int32 width = ItemSize.X;
   int32 height = ItemSize.Y;
-  // for the size of the item (width / height)
-  for (int32 y = -height/2; y < height/2; ++y) {
-    for (int32 x = -width/2; x < width/2; ++x) {
+  // note: we have to handle the case where the width or height are odd, so we
+  // have to ceil the division by 2
+  for (int32 y = -height/2; y < FMath::CeilToInt(height/2.0f); ++y) {
+    for (int32 x = -width/2; x < FMath::CeilToInt(width/2.0f); ++x) {
       FVector2D CellPosition = GridPosition + FVector2D(x, y);
       if (!IsCellValid(CellPosition.X, CellPosition.Y)) {
         return false;
       }
       Index = GetGridCellIndex(CellPosition.X, CellPosition.Y);
-      if (GridCells[Index]->IsOccupied()) {
-        if (Item == nullptr || GridCells[Index]->OccupyingItem != Item) {
+      UGridCell *Cell = GridCells[Index];
+      if (Cell->IsOccupied()) {
+        if (Item == nullptr || Cell->OccupyingItem != Item) {
           return false;
         }
       }
@@ -370,8 +372,10 @@ TArray<UGridCell*> AGrid::GetNeighborCells(const UGridCell* Cell, bool IncludeOc
 
 TArray<UGridCell*> AGrid::GetCells(const FVector2D& GridPosition, const FVector2D& GridSize) const {
   TArray<UGridCell*> Cells;
-  for (int32 y = -GridSize.Y/2; y < GridSize.Y/2; ++y) {
-    for (int32 x = -GridSize.X/2; x < GridSize.X/2; ++x) {
+  // note: we have to handle the case where the width or height are odd, so we
+  // have to ceil the division by 2
+  for (int32 y = -GridSize.Y/2; y < FMath::CeilToInt(GridSize.Y/2.0f); ++y) {
+    for (int32 x = -GridSize.X/2; x < FMath::CeilToInt(GridSize.X/2.0f); ++x) {
       FVector2D CellPosition = GridPosition + FVector2D(x, y);
       UGridCell *Cell = GetGridCellAtGridPosition(CellPosition);
       if (Cell) {
