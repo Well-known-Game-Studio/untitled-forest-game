@@ -97,6 +97,9 @@ public:
     UGridComponent* GetGridComponent(const AActor* Item) const;
 
     UFUNCTION(BlueprintCallable, Category = "Grid")
+    TArray<UGridCell*> GetNeighborCells(const UGridCell* Cell, bool IncludeOccupied=false) const;
+
+    UFUNCTION(BlueprintCallable, Category = "Grid")
     TArray<UGridCell*> GetCells(const FVector2D& GridPosition, const FVector2D& GridSize) const;
 
     // Is this actor a placeable item
