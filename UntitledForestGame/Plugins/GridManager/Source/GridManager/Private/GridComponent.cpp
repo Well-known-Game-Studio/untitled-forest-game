@@ -35,6 +35,40 @@ TArray<UGridCell*> UGridComponent::GetOccupiedCells() const {
   return OccupiedCells;
 }
 
+TArray<UGridCell*> UGridComponent::GetNeighborCells(bool IncludeOccupied) const {
+  TArray<UGridCell*> AdjacentCells;
+  if (Grid == nullptr) {
+    return AdjacentCells;
+  }
+  // // build up a list of FVector2D's that represent the neighboring cells around
+  // // the object
+  // TArray<FVector2D> NeighborCoords;
+  // // use the center + the size of the object to compute the neighboring cells
+  // FVector2D RotatedSize = GetRotatedSize();
+  // FVector2D Center = Position + RotatedSize / 2.0f;
+
+  // Less efficient, but more general way to get the adjacent cells
+  for (UGridCell* Cell : OccupiedCells) {
+    if (Cell == nullptr) {
+      continue;
+    }
+    TArray<UGridCell*> Neighbors = Grid->GetNeighborCells(Cell, IncludeOccupied);
+    for (UGridCell* Neighbor : Neighbors) {
+      if (Neighbor == nullptr) {
+        continue;
+      }
+      // Only add the cell if it is empty or we want to include occupied cells.
+      // Only add the cell if it is not already in the list.
+      if (IncludeOccupied || Neighbor->IsEmpty()) {
+        if (!AdjacentCells.Contains(Neighbor)) {
+          AdjacentCells.Add(Neighbor);
+        }
+      }
+    }
+  }
+  return AdjacentCells;
+}
+
 FVector2D UGridComponent::GetSize() const {
   return Size;
 }

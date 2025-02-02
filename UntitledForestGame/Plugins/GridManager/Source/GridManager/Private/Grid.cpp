@@ -332,7 +332,41 @@ bool AGrid::CanPlaceItem(const AActor* Item) const {
   return CanPlaceItemAtWorldPosition(Item, WorldPosition);
 }
 
-///////// Placement Checks /////////
+///////// Cell Queries /////////
+
+TArray<UGridCell*> AGrid::GetNeighborCells(const UGridCell* Cell, bool IncludeOccupied) const {
+  TArray<UGridCell*> Neighbors;
+  if (!Cell) {
+    return Neighbors;
+  }
+
+  // get the grid position of the cell
+  FVector2D GridPosition = Cell->GridPosition;
+  // for each direction
+  for (int32 y = -1; y <= 1; ++y) {
+    for (int32 x = -1; x <= 1; ++x) {
+      // skip the center cell
+      if (x == 0 && y == 0) {
+        continue;
+      }
+      // get the neighbor cell position
+      FVector2D NeighborPosition = GridPosition + FVector2D(x, y);
+      // check if the neighbor position is valid
+      if (IsCellValid(NeighborPosition.X, NeighborPosition.Y)) {
+        // get the neighbor cell
+        UGridCell *Neighbor = GetGridCellAtGridPosition(NeighborPosition);
+        if (Neighbor) {
+          // if we are including occupied cells, add the neighbor
+          if (IncludeOccupied || !Neighbor->IsOccupied()) {
+            Neighbors.Add(Neighbor);
+          }
+        }
+      }
+    }
+  }
+
+  return Neighbors;
+}
 
 TArray<UGridCell*> AGrid::GetCells(const FVector2D& GridPosition, const FVector2D& GridSize) const {
   TArray<UGridCell*> Cells;

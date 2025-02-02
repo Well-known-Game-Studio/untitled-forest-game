@@ -93,6 +93,14 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Grid")
     TArray<UGridCell*> GetOccupiedCells() const;
 
+    // Function to get the adjacent / neighboring cells of the object. If
+    // IncludeOccupied is true, then the function will return all the adjacent
+    // cells, even if they are occupied by other objects. If IncludeOccupied is
+    // false, then the function will return only the adjacent cells that are not
+    // occupied by other objects.
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    TArray<UGridCell*> GetNeighborCells(bool IncludeOccupied = false) const;
+
     // Function to get the size of the object. Note that this is the size of the
     // object in grid squares and not the size of the object in the world. Also,
     // the size of the object is not rotated.
