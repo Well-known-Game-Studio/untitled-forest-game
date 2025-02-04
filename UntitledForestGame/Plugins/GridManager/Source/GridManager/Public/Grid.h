@@ -191,7 +191,7 @@ public:
 
     // Debugging
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    void DebugDrawGrid() const;
+    void DebugDrawGrid(const FColor& EmptyColor = FColor::Green, const FColor& OccupiedColor = FColor::Red) const;
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    void DebugDrawItem(const AActor* Item) const;
+    void DebugDrawItem(const AActor* Item, const FColor& ItemColor = FColor::Red) const;
 };

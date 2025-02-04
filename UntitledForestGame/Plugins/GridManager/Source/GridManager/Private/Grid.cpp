@@ -511,23 +511,23 @@ void AGrid::DrawCell(const UGridCell* Cell, const FColor &Color, float Duration)
 }
 
 // Debug: Draw the grid
-void AGrid::DebugDrawGrid() const {
+void AGrid::DebugDrawGrid(const FColor& EmptyColor, const FColor& OccupiedColor) const {
   UWorld* World = GetWorld();
   if (!World) return;
 
   for (const UGridCell* Cell : GridCells) {
     // Set the color to blue by default
-    auto Color = FColor::Blue;
+    auto Color = EmptyColor;
     // Set the color to green if the cell is occupied
     if (Cell->IsOccupied()) {
-      Color = FColor::Green;
+      Color = OccupiedColor;
     }
     DrawCell(Cell, Color, -1.0f);
   }
 }
 
 // Debug: Draw an item
-void AGrid::DebugDrawItem(const AActor* Item) const {
+void AGrid::DebugDrawItem(const AActor* Item, const FColor& ItemColor) const {
   UWorld* World = GetWorld();
   if (!World) return;
 
@@ -538,7 +538,7 @@ void AGrid::DebugDrawItem(const AActor* Item) const {
 
   TArray<UGridCell*> Cells = GridComponent->OccupiedCells;
   for (UGridCell* Cell : Cells) {
-    DrawCell(Cell, FColor::Green, -1.0f);
+    DrawCell(Cell, ItemColor, -1.0f);
   }
 }
 
