@@ -195,12 +195,30 @@ UGridCell* AGrid::GetCellAtWorldPosition(const FVector& WorldPosition) const {
   return GridCells[Index];
 }
 
+FVector AGrid::ProjectVectorOntoGridPlane(const FVector& InVector) const {
+  FVector GridUpVector = GetActorUpVector();
+  return InVector - FVector::DotProduct(InVector, GridUpVector) * GridUpVector;
+}
+
+
 UGridCell* AGrid::GetCellInDirectionFromWorldPosition(const FVector& WorldPosition, const FVector& Direction) const {
-  auto CellPosition = WorldPosition + Direction * CellSize;
+  return GetCellAtDistanceInDirectionFromWorldPosition(WorldPosition, Direction, CellSize);
+}
+
+UGridCell* AGrid::GetCellAtDistanceInDirectionFromWorldPosition(const FVector& WorldPosition, const FVector& Direction, float Distance) const {
+  FVector GridDirection = ProjectVectorOntoGridPlane(Direction);
+  // re-normalize the vector
+  GridDirection.Normalize();
+
+  auto CellPosition = WorldPosition + GridDirection * Distance;
   return GetCellAtWorldPosition(CellPosition);
 }
 
 UGridCell* AGrid::GetCellInFrontOfActor(const AActor* Actor) const {
+  return GetCellAtDistanceInFrontOfActor(Actor, CellSize);
+}
+
+UGridCell* AGrid::GetCellAtDistanceInFrontOfActor(const AActor* Actor, float Distance) const {
   if (!Actor) {
     return nullptr;
   }
@@ -208,14 +226,12 @@ UGridCell* AGrid::GetCellInFrontOfActor(const AActor* Actor) const {
   FVector ActorLocation = Actor->GetActorLocation();
   FVector ActorForwardVector = Actor->GetActorForwardVector();
 
-  // get the up vector for the grid
-  FVector GridUpVector = GetActorUpVector();
-  // project the actor's forward vector onto the plane defined by the grid's up vector
-  ActorForwardVector = ActorForwardVector - FVector::DotProduct(ActorForwardVector, GridUpVector) * GridUpVector;
+  ActorForwardVector = ProjectVectorOntoGridPlane(ActorForwardVector);
   // re-normalize the vector
   ActorForwardVector.Normalize();
 
-  return GetCellInDirectionFromWorldPosition(ActorLocation, ActorForwardVector);
+  auto CellPosition = ActorLocation + ActorForwardVector * Distance;
+  return GetCellAtWorldPosition(CellPosition);
 }
 
 ///////// Actor Checks /////////
