@@ -181,9 +181,20 @@ public:
     // Get the grid cell in front of a location by the direction vector
     UFUNCTION(BlueprintCallable, Category = "Grid")
     UGridCell* GetCellInDirectionFromWorldPosition(const FVector& WorldPosition, const FVector& Direction) const;
-    // Get the grid cell in front of a given actor, using the actor's forward vector
+    // Get the grid cell in front of a location by the direction vector and distance
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    UGridCell* GetCellAtDistanceInDirectionFromWorldPosition(const FVector& WorldPosition, const FVector& Direction, float Distance) const;
+    // Get the grid cell in front of a given actor, using the actor's forward vector, scaled by the CellSize
     UFUNCTION(BlueprintCallable, Category = "Grid")
     UGridCell* GetCellInFrontOfActor(const AActor* Actor) const;
+    // Get the grid cell in front of a given actor, using the actor's forward vector and a distance
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    UGridCell* GetCellAtDistanceInFrontOfActor(const AActor* Actor, float Distance) const;
+
+    // Project a vector onto the grid plane. Note: this does not re-normalize
+    // the vector.
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    FVector ProjectVectorOntoGridPlane(const FVector& InVector) const;
 
     // Draw a cell
     UFUNCTION(BlueprintCallable, Category = "Grid")
