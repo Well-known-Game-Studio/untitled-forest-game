@@ -127,11 +127,11 @@ public:
     FVector2D GetPosition() const;
 
     // Function To update the position and rotation of the object on the grid.
-    void Update(FVector2D &NewPosition, float NewRotation);
+    void Update(FVector2D NewPosition, float NewRotation);
 
     // Function to place the object on the grid at the specified position and rotation.
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    bool PlaceInGrid(AGrid* NewGrid, FVector2D& NewPosition, float NewRotation);
+    bool PlaceInGrid(AGrid* NewGrid, FVector2D NewPosition, float NewRotation);
 
     // Function to Rotate the object on the grid to the specified rotation.
     UFUNCTION(BlueprintCallable, Category = "Grid")
@@ -149,6 +149,17 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Grid")
     FTransform GetWorldTransform() const;
 
+    // Function to get the target cells that the object will occupy if it is placed
+    // at the specified position and rotation.
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    TArray<UGridCell*> GetTargetCells(FVector2D NewPosition, float NewRotation) const;
+
+    // Function to get the transform of the object in the world at the specified
+    // position and rotation. This is designed to be used when showing to the
+    // player where the item _will_ be placed, before actually placing it in the grid
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    FTransform GetTargetWorldTransform(FVector2D NewPosition, float NewRotation) const;
+
     // Broadcast events
 
     UPROPERTY(BlueprintAssignable, Category = "Grid")
@@ -162,6 +173,9 @@ public:
 
     UPROPERTY(BlueprintAssignable, Category = "Grid")
     FOnGridPositionRotationChanged OnGridPositionRotationChanged;
+
+    // Function to make a transform from the occupied cells
+    FTransform MakeTransform(float AtRotation, const TArray<UGridCell*> &Cells) const;
 
  protected:
 

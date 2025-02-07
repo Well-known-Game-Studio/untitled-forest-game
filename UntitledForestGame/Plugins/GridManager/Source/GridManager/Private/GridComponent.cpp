@@ -42,30 +42,72 @@ TArray<UGridCell*> UGridComponent::GetNeighborCells(bool IncludeOccupied) const 
   }
   // // build up a list of FVector2D's that represent the neighboring cells around
   // // the object
-  // TArray<FVector2D> NeighborCoords;
-  // // use the center + the size of the object to compute the neighboring cells
-  // FVector2D RotatedSize = GetRotatedSize();
-  // FVector2D Center = Position + RotatedSize / 2.0f;
+  TArray<FVector2D> NeighborCoords;
+  // use the center + the size of the object to compute the neighboring cells
+  FVector2D RotatedSize = GetRotatedSize();
+  FVector2D PermiterSize = RotatedSize + FVector2D(2.0f, 2.0f);
+  FVector2D TopLeft = Position - FVector2D(1.0f, 1.0f);
+  FVector2D BottomRight = TopLeft + PermiterSize;
 
-  // Less efficient, but more general way to get the adjacent cells
-  for (UGridCell* Cell : OccupiedCells) {
-    if (Cell == nullptr) {
-      continue;
-    }
-    TArray<UGridCell*> Neighbors = Grid->GetNeighborCells(Cell, IncludeOccupied);
-    for (UGridCell* Neighbor : Neighbors) {
-      if (Neighbor == nullptr) {
-        continue;
-      }
-      // Only add the cell if it is empty or we want to include occupied cells.
-      // Only add the cell if it is not already in the list.
-      if (IncludeOccupied || Neighbor->IsEmpty()) {
-        if (!AdjacentCells.Contains(Neighbor)) {
-          AdjacentCells.Add(Neighbor);
+  // log the center, size, half size
+  UE_LOG(LogTemp, Warning, TEXT("PerimeterSize: (%f, %f)"), PermiterSize.X, PermiterSize.Y);
+  UE_LOG(LogTemp, Warning, TEXT("TopLeft: (%f, %f)"), TopLeft.X, TopLeft.Y);
+  UE_LOG(LogTemp, Warning, TEXT("BottomRight: (%f, %f)"), BottomRight.X, BottomRight.Y);
+
+  // Get coordinates for the cells around the perimeter of the object
+  for (int32 x = TopLeft.X; x < BottomRight.X; x++) {
+    for (int32 y = TopLeft.Y; y < BottomRight.Y; y++) {
+      // top edge or bottom edge, add all the cells in this row
+      if (y == TopLeft.Y || y == (BottomRight.Y-1)) {
+        NeighborCoords.Add(FVector2D(x, y));
+      } else {
+        // left edge or right edge, add the cells on the left and right
+        if (x == TopLeft.X || x == (BottomRight.X-1)) {
+          NeighborCoords.Add(FVector2D(x, y));
         }
       }
     }
   }
+
+  // print out the neighbor coords
+  // UE_LOG(LogTemp, Warning, TEXT("NeighborCoords:"));
+  // for (const FVector2D &Coord : NeighborCoords) {
+  //   UE_LOG(LogTemp, Warning, TEXT("  (%d, %d)"), (int32)Coord.X, (int32)Coord.Y);
+  // }
+
+  for (FVector2D Coord : NeighborCoords) {
+    UGridCell* Cell = Grid->GetCellAtGridPosition(Coord);
+    if (Cell == nullptr) {
+      continue;
+    }
+    // Only add the cell if it is empty or we want to include occupied cells.
+    // Only add the cell if it is not already in the list.
+    if (IncludeOccupied || Cell->IsEmpty()) {
+      if (!AdjacentCells.Contains(Cell)) {
+        AdjacentCells.Add(Cell);
+      }
+    }
+  }
+
+  // // Less efficient, but more general way to get the adjacent cells
+  // for (UGridCell* Cell : OccupiedCells) {
+  //   if (Cell == nullptr) {
+  //     continue;
+  //   }
+  //   TArray<UGridCell*> Neighbors = Grid->GetNeighborCells(Cell, IncludeOccupied);
+  //   for (UGridCell* Neighbor : Neighbors) {
+  //     if (Neighbor == nullptr) {
+  //       continue;
+  //     }
+  //     // Only add the cell if it is empty or we want to include occupied cells.
+  //     // Only add the cell if it is not already in the list.
+  //     if (IncludeOccupied || Neighbor->IsEmpty()) {
+  //       if (!AdjacentCells.Contains(Neighbor)) {
+  //         AdjacentCells.Add(Neighbor);
+  //       }
+  //     }
+  //   }
+  // }
   return AdjacentCells;
 }
 
@@ -93,7 +135,7 @@ FVector2D UGridComponent::GetPosition() const {
   return Position;
 }
 
-void UGridComponent::Update(FVector2D& NewPosition, float NewRotation) {
+void UGridComponent::Update(FVector2D NewPosition, float NewRotation) {
   if (Grid == nullptr) {
     return;
   }
@@ -151,7 +193,7 @@ bool UGridComponent::RotateCCW() {
   return Grid->RotateItem(GetOwner(), NewRotation);
 }
 
-bool UGridComponent::PlaceInGrid(AGrid* NewGrid, FVector2D& NewPosition, float NewRotation) {
+bool UGridComponent::PlaceInGrid(AGrid* NewGrid, FVector2D NewPosition, float NewRotation) {
   if (NewGrid == nullptr) {
     return false;
   }
@@ -162,23 +204,44 @@ bool UGridComponent::PlaceInGrid(AGrid* NewGrid, FVector2D& NewPosition, float N
   return true;
 }
 
+TArray<UGridCell*> UGridComponent::GetTargetCells(FVector2D NewPosition, float NewRotation) const {
+  if (Grid == nullptr) {
+    return TArray<UGridCell*>();
+  }
+  // change the size that we use for occupying cells based on the rotation
+  FVector2D RotatedSize = GetSizeAtRotation(NewRotation);
+  // get the new cells
+  return Grid->GetCells(NewPosition, RotatedSize);
+}
+
+FTransform UGridComponent::GetTargetWorldTransform(FVector2D NewPosition, float NewRotation) const {
+  // get the target cells
+  TArray<UGridCell*> TargetCells = GetTargetCells(NewPosition, NewRotation);
+  // return the transform
+  return MakeTransform(NewRotation, TargetCells);
+}
+
 FTransform UGridComponent::GetWorldTransform() const
 {
+  return MakeTransform(Rotation, OccupiedCells);
+}
+
+FTransform UGridComponent::MakeTransform(float AtRotation, const TArray<UGridCell*> &Cells) const {
   if (Grid == nullptr) {
     return FTransform();
   }
-  if (OccupiedCells.Num() == 0) {
+  if (Cells.Num() == 0) {
     return FTransform();
   }
-  UGridCell* Cell = OccupiedCells[0];
+  UGridCell* Cell = Cells[0];
   if (Cell == nullptr) {
     return FTransform();
   }
   FVector Location = Cell->GetWorldPosition();
   // if the width > 1 or the height > 1, then the position is the center of the
-  // occupied cells, which is just midway between the first and last cells
-  if (OccupiedCells.Num() > 1) {
-    UGridCell* LastCell = OccupiedCells[OccupiedCells.Num() - 1];
+  // cells, which is just midway between the first and last cells
+  if (Cells.Num() > 1) {
+    UGridCell* LastCell = Cells[Cells.Num() - 1];
     if (LastCell != nullptr) {
       Location = (Location + LastCell->GetWorldPosition()) / 2.0f;
     }
@@ -196,7 +259,7 @@ FTransform UGridComponent::GetWorldTransform() const
   // Item is rotated along its z-axis
   FVector WorldZ = FVector(0.0f, 0.0f, 1.0f);
   // make a rotator from the up vector and the rotation angle
-  FRotator RotationRotator = FQuat(WorldZ.GetSafeNormal(), FMath::DegreesToRadians(Rotation)).Rotator();
+  FRotator RotationRotator = FQuat(WorldZ.GetSafeNormal(), FMath::DegreesToRadians(AtRotation)).Rotator();
   // combine the two rotators (order is important here!)
   Rotator = FRotator(FQuat(Rotator)*FQuat(RotationRotator));
 

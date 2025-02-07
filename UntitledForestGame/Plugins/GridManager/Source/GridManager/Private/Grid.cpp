@@ -169,8 +169,8 @@ AActor* AGrid::GetItemAtWorldPosition(const FVector& WorldPosition) {
 //// GET CELLS ////
 
 UGridCell* AGrid::GetCellAtGridPosition(const FVector2D& GridPosition) const {
-  int32 x = GridPosition.X;
-  int32 y = GridPosition.Y;
+  int32 x = FMath::CeilToInt(GridPosition.X);
+  int32 y = FMath::CeilToInt(GridPosition.Y);
   int32 Index = GetGridCellIndex(x, y);
 
   if (!IsCellValid(x,y) || Index >= GridCells.Num()) {
@@ -268,8 +268,8 @@ bool AGrid::CheckIfCellsAreFree(const FVector2D &GridPosition, const FVector2D &
   int32 height = ItemSize.Y;
   // note: we have to handle the case where the width or height are odd, so we
   // have to ceil the division by 2
-  for (int32 y = -height/2; y < FMath::CeilToInt(height/2.0f); ++y) {
-    for (int32 x = -width/2; x < FMath::CeilToInt(width/2.0f); ++x) {
+  for (int32 y = 0; y < height; ++y) {
+    for (int32 x = 0; x < width; ++x) {
       FVector2D CellPosition = GridPosition + FVector2D(x, y);
       if (!IsCellValid(CellPosition.X, CellPosition.Y)) {
         return false;
@@ -390,8 +390,8 @@ TArray<UGridCell*> AGrid::GetCells(const FVector2D& GridPosition, const FVector2
   TArray<UGridCell*> Cells;
   // note: we have to handle the case where the width or height are odd, so we
   // have to ceil the division by 2
-  for (int32 y = -GridSize.Y/2; y < FMath::CeilToInt(GridSize.Y/2.0f); ++y) {
-    for (int32 x = -GridSize.X/2; x < FMath::CeilToInt(GridSize.X/2.0f); ++x) {
+  for (int32 y = 0; y < GridSize.Y; ++y) {
+    for (int32 x = 0; x < GridSize.X; ++x) {
       FVector2D CellPosition = GridPosition + FVector2D(x, y);
       UGridCell *Cell = GetGridCellAtGridPosition(CellPosition);
       if (Cell) {
