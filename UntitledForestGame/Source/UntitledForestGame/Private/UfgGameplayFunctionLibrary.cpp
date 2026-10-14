@@ -3,31 +3,29 @@
 #include "AssetRegistry/AssetRegistryModule.h"
 
 bool UUfgGameplayFunctionLibrary::GetClosestInteractableInRange(AActor* InstigatorActor, float InteractionRange, FVector BoxHalfExtent, AActor* &ClosestActor, UActorComponent* &ClosestComponent, FHitResult &ClosestHit) {
-	FVector EyeLocation;
-	FRotator EyeRotation;
-	InstigatorActor->GetActorEyesViewPoint(EyeLocation, EyeRotation);
-	auto ForwardVector = InstigatorActor->GetActorForwardVector();
-	auto Location = InstigatorActor->GetActorLocation();
-	auto Rotation = InstigatorActor->GetActorRotation();
-
-  FVector Origin = Location;
-	FVector End = Origin + (ForwardVector * InteractionRange);
+	if (!InstigatorActor) {
+		return false;
+	}
+	const FVector ForwardVector = InstigatorActor->GetActorForwardVector();
+	const FVector Origin = InstigatorActor->GetActorLocation();
+	const FVector End = Origin + (ForwardVector * InteractionRange);
   return GetClosestInteractableInBox(InstigatorActor, BoxHalfExtent, Origin, End, ClosestActor, ClosestComponent, ClosestHit);
 }
 
 bool UUfgGameplayFunctionLibrary::GetClosestInteractableInBox(AActor* InstigatorActor, FVector BoxHalfExtent, FVector Origin, FVector End, AActor* &ClosestActor, UActorComponent* &ClosestComponent, FHitResult &ClosestHit) {
+	if (!InstigatorActor || !InstigatorActor->GetWorld()) {
+		return false;
+	}
 	FCollisionObjectQueryParams ObjectQueryParams;
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_Pawn);
 
-	FCollisionShape Shape;
-	Chaos::TVector<float, 3> HalfExtent = BoxHalfExtent;
-	Shape.SetBox(HalfExtent);
+	const FCollisionShape Shape = FCollisionShape::MakeBox(FVector3f(BoxHalfExtent));
 
 	TArray<FHitResult> Hits;
 
-	bool bBlockingHit = InstigatorActor->GetWorld()->SweepMultiByObjectType(Hits,
+	InstigatorActor->GetWorld()->SweepMultiByObjectType(Hits,
 														   Origin,
 														   End,
 														   FQuat::Identity,
@@ -37,7 +35,7 @@ bool UUfgGameplayFunctionLibrary::GetClosestInteractableInBox(AActor* Instigator
 	// find the closest interactable actor or component from the list
 	float ClosestDistance = (End - Origin).Size();
 
-	for (auto Hit : Hits) {
+	for (const FHitResult& Hit : Hits) {
 		AActor* Actor = Hit.GetActor();
 		if (Actor) {
 			// get the distance to the hit location

@@ -26,6 +26,8 @@ public class GridEditor : ModuleRules
 			new string[]
 			{
 				"Core",
+				"Slate",
+				"SlateCore",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -36,8 +38,6 @@ public class GridEditor : ModuleRules
 			{
 				"CoreUObject",
 				"Engine",
-				"Slate",
-				"SlateCore",
 				"ToolMenus",
 				"InputCore",
 				"EditorFramework",

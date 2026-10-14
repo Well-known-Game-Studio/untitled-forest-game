@@ -19,7 +19,7 @@ public:
     void EditorTick(float DeltaTime);
 
     // Called when a property is changed in the editor
-    void PostEditChangeProperty(FPropertyChangedEvent& e);
+    virtual void PostEditChangeProperty(FPropertyChangedEvent& e) override;
 #endif
 
     /** Tick that runs ONLY in the editor viewport.*/

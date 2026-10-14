@@ -49,10 +49,9 @@ TArray<UGridCell*> UGridComponent::GetNeighborCells(bool IncludeOccupied) const 
   FVector2D TopLeft = Position - FVector2D(1.0f, 1.0f);
   FVector2D BottomRight = TopLeft + PermiterSize;
 
-  // log the center, size, half size
-  UE_LOG(LogTemp, Warning, TEXT("PerimeterSize: (%f, %f)"), PermiterSize.X, PermiterSize.Y);
-  UE_LOG(LogTemp, Warning, TEXT("TopLeft: (%f, %f)"), TopLeft.X, TopLeft.Y);
-  UE_LOG(LogTemp, Warning, TEXT("BottomRight: (%f, %f)"), BottomRight.X, BottomRight.Y);
+  UE_LOG(LogTemp, Verbose, TEXT("PerimeterSize: (%f, %f)"), PermiterSize.X, PermiterSize.Y);
+  UE_LOG(LogTemp, Verbose, TEXT("TopLeft: (%f, %f)"), TopLeft.X, TopLeft.Y);
+  UE_LOG(LogTemp, Verbose, TEXT("BottomRight: (%f, %f)"), BottomRight.X, BottomRight.Y);
 
   // Get coordinates for the cells around the perimeter of the object
   for (int32 x = TopLeft.X; x < BottomRight.X; x++) {
@@ -179,8 +178,8 @@ bool UGridComponent::RotateCW() {
   if (Grid == nullptr) {
     return false;
   }
-  // add 90 degrees to the current rotation mod 360
-  float NewRotation = FMath::Fmod(Rotation + 90.0f, 360.0f);
+  // add 90 degrees to the current rotation, normalized to [0, 360)
+  float NewRotation = FMath::Fmod(Rotation + 90.0f + 360.0f, 360.0f);
   return Grid->RotateItem(GetOwner(), NewRotation);
 }
 
@@ -188,8 +187,10 @@ bool UGridComponent::RotateCCW() {
   if (Grid == nullptr) {
     return false;
   }
-  // subtract 90 degrees from the current rotation mod 360
-  float NewRotation = FMath::Fmod(Rotation - 90.0f, 360.0f);
+  // subtract 90 degrees from the current rotation, normalized to [0, 360)
+  // (plain Fmod would yield -90 from 0, which GetSizeAtRotation does not treat
+  // as a quarter turn)
+  float NewRotation = FMath::Fmod(Rotation - 90.0f + 360.0f, 360.0f);
   return Grid->RotateItem(GetOwner(), NewRotation);
 }
 
