@@ -6,6 +6,19 @@ UGridComponent::UGridComponent() {
   PrimaryComponentTick.bCanEverTick = false;
 }
 
+float UGridComponent::NormalizeRotation(float Degrees) {
+  // Fmod keeps the sign of the dividend, so apply it twice: once to bring the
+  // magnitude under 360, then again after shifting negatives up by 360.
+  return FMath::Fmod(FMath::Fmod(Degrees, 360.0f) + 360.0f, 360.0f);
+}
+
+// A rotation is a quarter turn if it is (nearly) 90 or 270 degrees once
+// normalized; for those the item's width and height swap on the grid.
+static bool IsQuarterTurn(float Degrees) {
+  const float Normalized = UGridComponent::NormalizeRotation(Degrees);
+  return FMath::IsNearlyEqual(Normalized, 90.0f) || FMath::IsNearlyEqual(Normalized, 270.0f);
+}
+
 void UGridComponent::BeginPlay() {
   Super::BeginPlay();
 }
@@ -49,10 +62,9 @@ TArray<UGridCell*> UGridComponent::GetNeighborCells(bool IncludeOccupied) const 
   FVector2D TopLeft = Position - FVector2D(1.0f, 1.0f);
   FVector2D BottomRight = TopLeft + PermiterSize;
 
-  // log the center, size, half size
-  UE_LOG(LogTemp, Warning, TEXT("PerimeterSize: (%f, %f)"), PermiterSize.X, PermiterSize.Y);
-  UE_LOG(LogTemp, Warning, TEXT("TopLeft: (%f, %f)"), TopLeft.X, TopLeft.Y);
-  UE_LOG(LogTemp, Warning, TEXT("BottomRight: (%f, %f)"), BottomRight.X, BottomRight.Y);
+  UE_LOG(LogTemp, Verbose, TEXT("PerimeterSize: (%f, %f)"), PermiterSize.X, PermiterSize.Y);
+  UE_LOG(LogTemp, Verbose, TEXT("TopLeft: (%f, %f)"), TopLeft.X, TopLeft.Y);
+  UE_LOG(LogTemp, Verbose, TEXT("BottomRight: (%f, %f)"), BottomRight.X, BottomRight.Y);
 
   // Get coordinates for the cells around the perimeter of the object
   for (int32 x = TopLeft.X; x < BottomRight.X; x++) {
@@ -116,19 +128,11 @@ FVector2D UGridComponent::GetSize() const {
 }
 
 FVector2D UGridComponent::GetRotatedSize() const {
-  FVector2D RotatedSize = Size;
-  if (Rotation == 90.0f || Rotation == 270.0f) {
-    RotatedSize = FVector2D(Size.Y, Size.X);
-  }
-  return RotatedSize;
+  return GetSizeAtRotation(Rotation);
 }
 
 FVector2D UGridComponent::GetSizeAtRotation(float NewRotation) const {
-  FVector2D RotatedSize = Size;
-  if (NewRotation == 90.0f || NewRotation == 270.0f) {
-    RotatedSize = FVector2D(Size.Y, Size.X);
-  }
-  return RotatedSize;
+  return IsQuarterTurn(NewRotation) ? FVector2D(Size.Y, Size.X) : Size;
 }
 
 FVector2D UGridComponent::GetPosition() const {
@@ -139,9 +143,9 @@ void UGridComponent::Update(FVector2D NewPosition, float NewRotation) {
   if (Grid == nullptr) {
     return;
   }
-  // set the new position and rotation
+  // set the new position and rotation (always stored normalized to [0, 360))
   Position = NewPosition;
-  Rotation = NewRotation;
+  Rotation = NormalizeRotation(NewRotation);
   // clear the occupied cells
   for (UGridCell* Cell : OccupiedCells) {
     if (Cell != nullptr) {
@@ -165,7 +169,7 @@ void UGridComponent::Update(FVector2D NewPosition, float NewRotation) {
   FTransform NewTransform = GetWorldTransform();
   GetOwner()->SetActorTransform(NewTransform);
   // broadcast that the item has been updated
-  OnGridPositionRotationChanged.Broadcast(NewPosition, NewRotation);
+  OnGridPositionRotationChanged.Broadcast(Position, Rotation);
 }
 
 bool UGridComponent::RotateTo(float NewRotation) {
@@ -179,8 +183,7 @@ bool UGridComponent::RotateCW() {
   if (Grid == nullptr) {
     return false;
   }
-  // add 90 degrees to the current rotation mod 360
-  float NewRotation = FMath::Fmod(Rotation + 90.0f, 360.0f);
+  float NewRotation = NormalizeRotation(Rotation + 90.0f);
   return Grid->RotateItem(GetOwner(), NewRotation);
 }
 
@@ -188,8 +191,7 @@ bool UGridComponent::RotateCCW() {
   if (Grid == nullptr) {
     return false;
   }
-  // subtract 90 degrees from the current rotation mod 360
-  float NewRotation = FMath::Fmod(Rotation - 90.0f, 360.0f);
+  float NewRotation = NormalizeRotation(Rotation - 90.0f);
   return Grid->RotateItem(GetOwner(), NewRotation);
 }
 

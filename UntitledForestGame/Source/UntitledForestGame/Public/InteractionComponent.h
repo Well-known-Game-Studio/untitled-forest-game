@@ -15,7 +15,7 @@ class UNTITLEDFORESTGAME_API UInteractionComponent : public UActorComponent
 public:
 
     UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
-    float InteractionRange = 200.0f; // meters
+    float InteractionRange = 200.0f; // centimeters (Unreal units)
 
     UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
     FVector InteractionBoxQueryHalfExtent{32.0f, 32.0f, 100.0f};

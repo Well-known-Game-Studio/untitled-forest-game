@@ -4,16 +4,40 @@ This folder contains the project files for the Unreal Engine 5 game.
 
 ## Requirements
 
-This project requires that you have downloaded and installed these plugins into
-your Unreal Engine 5 Engine installation. The plugins can be downloaded via [the
-Fab marketplace](https://fab.com), and then they can be installed into your
-engine via the `Epic Games Launcher`.
-
-* Unreal Engine 5 (>= 5.5)
+* Unreal Engine 5.8 (installed via the `Epic Games Launcher`)
 
 ### Plugins
 
 * [Paper ZD Plugin](https://www.fab.com/listings/6664e3b5-e376-47aa-a0dd-f7bbbd5b93c0)
+  (2.2.4 or newer), downloaded from Fab and installed into the UE 5.8 engine
+  via the `Epic Games Launcher`.
+
+## Building from the command line (macOS)
+
+```sh
+"/Users/Shared/Epic Games/UE_5.8/Engine/Build/BatchFiles/Mac/Build.sh" \
+  UntitledForestGameEditor Mac Development \
+  -Project="$PWD/UntitledForestGame.uproject" -WaitMutex
+```
+
+## Using Claude Code with the editor (MCP)
+
+The project enables Epic's experimental **Unreal MCP** plugin (`ModelContextProtocol`)
+plus a few editor toolsets (`EditorToolset`, `ConfigSettingsToolset`,
+`AutomationTestToolset`, `UMGToolSet`). `Config/DefaultEditorPerProjectUserSettings.ini`
+makes the editor start the MCP server automatically on
+`http://127.0.0.1:8000/mcp`, and the repo-root `.mcp.json` points Claude Code at it.
+
+1. Open the project in the UE 5.8 editor (the server starts with the editor).
+2. Run `claude` from the repo root; the `unreal-mcp` server is picked up from
+   `.mcp.json` and can be inspected with `/mcp`.
+3. The server exposes `list_toolsets`, `describe_toolset`, and `call_tool`;
+   Claude discovers the editor tools on demand through those.
+
+Settings live under Edit > Project Settings > Plugins > Model Context Protocol.
+Change the port there and in `.mcp.json` if 8000 is taken. The server can also
+be started or stopped from the console with `ModelContextProtocol.StartServer`
+and `ModelContextProtocol.StopServer`.
 
 ## Blocking out levels
 

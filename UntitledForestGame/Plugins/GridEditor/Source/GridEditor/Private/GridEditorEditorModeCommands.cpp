@@ -2,7 +2,7 @@
 
 #include "GridEditorEditorModeCommands.h"
 #include "GridEditorEditorMode.h"
-#include "EditorStyleSet.h"
+#include "Styling/AppStyle.h"
 
 #define LOCTEXT_NAMESPACE "GridEditorEditorModeCommands"
 
@@ -10,7 +10,7 @@ FGridEditorEditorModeCommands::FGridEditorEditorModeCommands()
 	: TCommands<FGridEditorEditorModeCommands>("GridEditorEditorMode",
 		NSLOCTEXT("GridEditorEditorMode", "GridEditorEditorModeCommands", "GridEditor Editor Mode"),
 		NAME_None,
-		FEditorStyle::GetStyleSetName())
+		FAppStyle::GetAppStyleSetName())
 {
 }
 

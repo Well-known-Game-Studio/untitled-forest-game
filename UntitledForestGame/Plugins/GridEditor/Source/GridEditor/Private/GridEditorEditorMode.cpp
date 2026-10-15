@@ -2,7 +2,7 @@
 
 #include "GridEditorEditorMode.h"
 #include "GridEditorEditorModeToolkit.h"
-#include "EdModeInteractiveToolsContext.h"
+#include "Tools/EdModeInteractiveToolsContext.h"
 #include "InteractiveToolManager.h"
 #include "GridEditorEditorModeCommands.h"
 

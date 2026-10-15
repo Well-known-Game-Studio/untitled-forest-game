@@ -42,6 +42,6 @@ private:
     // float WaterLevelInput;
 
     // Input values for grid dimensions
-    int32 GridWidthInput;
-    int32 GridHeightInput;
+    int32 GridWidthInput = 10;
+    int32 GridHeightInput = 10;
 };

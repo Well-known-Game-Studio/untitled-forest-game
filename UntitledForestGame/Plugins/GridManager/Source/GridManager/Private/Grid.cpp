@@ -6,6 +6,11 @@
 void AGrid::InitializeGrid() {
   GridCells.Empty();
 
+  // Fall back to the base cell class if the class property was cleared in the editor
+  if (!GridCellClass) {
+    GridCellClass = UGridCell::StaticClass();
+  }
+
   for (int32 y = 0; y < GridHeight; ++y) {
     for (int32 x = 0; x < GridWidth; ++x) {
       // Create a new grid cell, the array holds pointers to the cells
@@ -58,7 +63,13 @@ UGridCell* AGrid::GetGridCellAtXY(int32 X, int32 Y) const {
     return nullptr;
   }
 
-  return GridCells[GetGridCellIndex(X, Y)];
+  // GridCells can be empty (or stale) until InitializeGrid has run
+  const int32 Index = GetGridCellIndex(X, Y);
+  if (!GridCells.IsValidIndex(Index)) {
+    return nullptr;
+  }
+
+  return GridCells[Index];
 }
 
 UGridCell* AGrid::GetGridCellAtGridPosition(const FVector2D& GridPosition) const {
@@ -173,7 +184,7 @@ UGridCell* AGrid::GetCellAtGridPosition(const FVector2D& GridPosition) const {
   int32 y = FMath::CeilToInt(GridPosition.Y);
   int32 Index = GetGridCellIndex(x, y);
 
-  if (!IsCellValid(x,y) || Index >= GridCells.Num()) {
+  if (!IsCellValid(x,y) || !GridCells.IsValidIndex(Index)) {
     return nullptr;
   }
 
@@ -188,7 +199,7 @@ UGridCell* AGrid::GetCellAtWorldPosition(const FVector& WorldPosition) const {
   int32 y = GridPosition.Y;
   int32 Index = GetGridCellIndex(x, y);
 
-  if (!IsCellValid(x,y) || Index >= GridCells.Num()) {
+  if (!IsCellValid(x,y) || !GridCells.IsValidIndex(Index)) {
     return nullptr;
   }
 
@@ -255,27 +266,17 @@ bool AGrid::CheckIfCellsAreFree(const FVector2D &GridPosition, const FVector2D &
     return false;
   }
 
-  // check the cell at grid position
-  int32 Index = GetGridCellIndex(GridPosition.X, GridPosition.Y);
-  if (GridCells[Index]->IsOccupied()) {
-    if (Item == nullptr || GridCells[Index]->OccupyingItem != Item) {
-      return false;
-    }
-  }
-
-  // now check the cells around it
+  // check every cell the item would cover, starting at GridPosition (the
+  // origin cell itself is x=0,y=0 in this loop)
   int32 width = ItemSize.X;
   int32 height = ItemSize.Y;
-  // note: we have to handle the case where the width or height are odd, so we
-  // have to ceil the division by 2
   for (int32 y = 0; y < height; ++y) {
     for (int32 x = 0; x < width; ++x) {
       FVector2D CellPosition = GridPosition + FVector2D(x, y);
-      if (!IsCellValid(CellPosition.X, CellPosition.Y)) {
+      UGridCell *Cell = GetGridCellAtXY(CellPosition.X, CellPosition.Y);
+      if (!Cell) {
         return false;
       }
-      Index = GetGridCellIndex(CellPosition.X, CellPosition.Y);
-      UGridCell *Cell = GridCells[Index];
       if (Cell->IsOccupied()) {
         if (Item == nullptr || Cell->OccupyingItem != Item) {
           return false;
@@ -468,21 +469,22 @@ bool AGrid::RemoveItem(AActor* Item)
   if (!IsPlaceableItem(Item)) return false;
   auto GridComponent = GetGridComponent(Item);
 
-  TArray<UGridCell*> CellsToFree = GridComponent->OccupiedCells;
-  for (UGridCell* Cell : CellsToFree) {
-    if (!Cell) {
-      continue;
+  for (UGridCell* Cell : GridComponent->OccupiedCells) {
+    if (Cell && Cell->OccupyingItem == Item) {
+      Cell->SetOccupyingItem(nullptr);
     }
-    if (!Cell->IsOccupied()) {
-      continue;
-    }
-    Cell->SetOccupyingItem(nullptr);
   }
+
+  // Fully detach the item (cells, component state, managed list) before
+  // broadcasting, so listeners observe the completed removal and may safely
+  // re-place the item from the callback.
+  GridComponent->OccupiedCells.Empty();
+  GridComponent->Grid = nullptr;
+  ManagedItems.Remove(Item);
 
   UE_LOG(LogTemp, Log, TEXT("Item removed: %s"), *Item->GetName());
 
-  // remove the item from the grid
-  ManagedItems.Remove(Item);
+  GridComponent->OnRemovedFromGrid.Broadcast();
 
   return true;
 }
@@ -494,7 +496,7 @@ bool AGrid::CanRotateItem(AActor* Item, float NewRotation) {
   if (!ManagedItems.Contains(Item)) return false;
   auto GridComponent = GetGridComponent(Item);
   if (!GridComponent) return false;
-  if (GridComponent->Rotation == NewRotation) return false;
+  if (FMath::IsNearlyEqual(GridComponent->Rotation, UGridComponent::NormalizeRotation(NewRotation))) return false;
   // get the rotated size of the item
   FVector2D RotatedSize = GridComponent->GetSizeAtRotation(NewRotation);
   // now get the position of the item
@@ -532,6 +534,7 @@ void AGrid::DebugDrawGrid(const FColor& EmptyColor, const FColor& OccupiedColor)
   if (!World) return;
 
   for (const UGridCell* Cell : GridCells) {
+    if (!Cell) continue;
     // Set the color to blue by default
     auto Color = EmptyColor;
     // Set the color to green if the cell is occupied
