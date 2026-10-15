@@ -475,16 +475,16 @@ bool AGrid::RemoveItem(AActor* Item)
     }
   }
 
-  // Clear the component's placement state so it no longer reports itself as
-  // being on this grid, and let listeners know.
+  // Fully detach the item (cells, component state, managed list) before
+  // broadcasting, so listeners observe the completed removal and may safely
+  // re-place the item from the callback.
   GridComponent->OccupiedCells.Empty();
   GridComponent->Grid = nullptr;
-  GridComponent->OnRemovedFromGrid.Broadcast();
+  ManagedItems.Remove(Item);
 
   UE_LOG(LogTemp, Log, TEXT("Item removed: %s"), *Item->GetName());
 
-  // remove the item from the grid
-  ManagedItems.Remove(Item);
+  GridComponent->OnRemovedFromGrid.Broadcast();
 
   return true;
 }
@@ -496,7 +496,7 @@ bool AGrid::CanRotateItem(AActor* Item, float NewRotation) {
   if (!ManagedItems.Contains(Item)) return false;
   auto GridComponent = GetGridComponent(Item);
   if (!GridComponent) return false;
-  if (GridComponent->Rotation == NewRotation) return false;
+  if (FMath::IsNearlyEqual(GridComponent->Rotation, UGridComponent::NormalizeRotation(NewRotation))) return false;
   // get the rotated size of the item
   FVector2D RotatedSize = GridComponent->GetSizeAtRotation(NewRotation);
   // now get the position of the item

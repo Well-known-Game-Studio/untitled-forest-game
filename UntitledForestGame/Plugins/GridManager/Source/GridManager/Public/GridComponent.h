@@ -177,6 +177,11 @@ public:
     // Function to make a transform from the occupied cells
     FTransform MakeTransform(float AtRotation, const TArray<UGridCell*> &Cells) const;
 
+    // Normalize any finite angle in degrees into [0, 360). All rotations
+    // stored on or compared by this component go through this.
+    UFUNCTION(BlueprintPure, Category = "Grid")
+    static float NormalizeRotation(float Degrees);
+
  protected:
 
     // The list of the grid cells that the object occupies.
